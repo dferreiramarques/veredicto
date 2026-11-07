@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-PT" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Veredicto</title>
+  <meta name="description" content="Hipóteses com métrica, sessões de teste e a decisão perseverar / ajustar / matar por incremento." />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <script src="/js/theme.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/app.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar__in">
+      <a class="brand" href="/">
+        <span class="brand__mark" aria-hidden="true">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4 10-10"/></svg>
+        </span>
+        Veredicto
+      </a>
+      <span class="grow"></span>
+      <button class="btn btn--primary" id="btn-nova" type="button">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        <span class="btn-label">Nova hipótese</span>
+      </button>
+      <button class="btn btn--text btn--icon" type="button" data-theme-toggle aria-label="Alternar tema claro / escuro" title="Tema"></button>
+      <details class="menu" id="menu">
+        <summary class="btn btn--text btn--icon" aria-label="Menu" title="Menu">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </summary>
+        <div class="menu__list">
+          <button class="btn btn--text" type="button" id="btn-importar">Importar ficheiro…</button>
+          <button class="btn btn--text" type="button" id="btn-export-json">Exportar dados (JSON)</button>
+          <button class="btn btn--text" type="button" id="btn-export-md">Exportar relatório (Markdown)</button>
+        </div>
+      </details>
+      <input type="file" id="ficheiro" accept=".json,.yaml,.yml,application/json,text/yaml" hidden />
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="tabs" role="tablist" aria-label="Vistas">
+      <button class="tab" role="tab" id="tab-hipoteses" aria-controls="v-hipoteses" aria-selected="true" type="button">Hipóteses</button>
+      <button class="tab" role="tab" id="tab-decisoes" aria-controls="v-decisoes" aria-selected="false" type="button">Decisões</button>
+    </div>
+
+    <section id="v-hipoteses" role="tabpanel" aria-labelledby="tab-hipoteses">
+      <div class="toolbar">
+        <div class="filters" role="group" aria-label="Filtrar por estado">
+          <button class="filter" type="button" data-filtro="todas" aria-pressed="true">Todas</button>
+          <button class="filter" type="button" data-filtro="por-testar" aria-pressed="false">Por testar</button>
+          <button class="filter" type="button" data-filtro="sustentada" aria-pressed="false">Sustentadas</button>
+          <button class="filter" type="button" data-filtro="refutada" aria-pressed="false">Refutadas</button>
+        </div>
+        <span class="grow"></span>
+        <label class="sr" for="filtro-incremento">Incremento</label>
+        <select class="select" id="filtro-incremento"></select>
+      </div>
+      <p class="summary" id="resumo" aria-live="polite"></p>
+      <div class="list" id="lista"></div>
+    </section>
+
+    <section id="v-decisoes" role="tabpanel" aria-labelledby="tab-decisoes" hidden>
+      <p class="summary">No fim de cada incremento: perseverar, ajustar ou matar. A app sugere a partir das hipóteses críticas; quem decide és tu, com o porquê.</p>
+      <div class="list" id="decisoes"></div>
+    </section>
+
+    <p class="foot">Os dados ficam neste browser. Exporta para guardar ou levar para outro lado. · Veredicto v1 · etapa Validar do método monco</p>
+  </main>
+
+  <dialog class="dialog" id="dlg-hip" aria-labelledby="dlg-hip-titulo">
+    <form class="form" id="form-hip" method="dialog" novalidate>
+      <h2 id="dlg-hip-titulo">Nova hipótese</h2>
+      <label class="field"><span>Aposta</span>
+        <textarea class="textarea" name="aposta" rows="2" maxlength="500" placeholder="Se fizermos X, então Y"></textarea>
+      </label>
+      <div class="row">
+        <label class="field"><span>Problema</span><input class="input" name="problema" maxlength="500" placeholder="o que dói, a quem" /></label>
+        <label class="field"><span>Utilizador</span><input class="input" name="utilizador" maxlength="120" placeholder="quem" /></label>
+      </div>
+      <fieldset class="group">
+        <legend>Métrica (obrigatória)</legend>
+        <div class="row">
+          <label class="field"><span>O que se mede</span><input class="input" name="indicador" maxlength="240" placeholder="tempo até ao primeiro roadmap" /></label>
+          <label class="field"><span>Alvo</span><input class="input" name="alvo" maxlength="120" placeholder="&lt; 10 min" /></label>
+        </div>
+        <label class="field"><span>Como se mede</span><input class="input" name="como" maxlength="500" placeholder="cronómetro em 3 sessões" /></label>
+      </fieldset>
+      <div class="row">
+        <label class="field"><span>Incremento</span>
+          <input class="input" name="incremento" list="lista-incrementos" maxlength="120" placeholder="vazio = hipótese solta (spike)" />
+          <small>Escreve um nome novo para criar o incremento.</small>
+        </label>
+        <label class="check"><input type="checkbox" name="critica" checked /> <span>Crítica — pesa na decisão do incremento</span></label>
+      </div>
+      <datalist id="lista-incrementos"></datalist>
+      <p class="form__err" id="erro-hip" aria-live="assertive"></p>
+      <div class="form__actions">
+        <button class="btn btn--text" type="button" data-fechar>Cancelar</button>
+        <button class="btn btn--primary" type="submit">Guardar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="dialog" id="dlg-sessao" aria-labelledby="dlg-sessao-titulo">
+    <form class="form" id="form-sessao" method="dialog" novalidate>
+      <h2 id="dlg-sessao-titulo">Registar sessão</h2>
+      <p class="form__hint" id="sessao-hipotese"></p>
+      <div class="row">
+        <label class="field"><span>Data</span><input class="input" type="date" name="data" /></label>
+        <label class="field"><span>Tipo</span>
+          <select class="select" name="tipo">
+            <option value="validacao">validação</option>
+            <option value="levantamento">levantamento</option>
+          </select>
+        </label>
+      </div>
+      <label class="field"><span>Participantes</span><input class="input" name="participantes" maxlength="120" value="1 utilizador" /></label>
+      <label class="field"><span>Sinal observado</span>
+        <textarea class="textarea" name="sinal" rows="2" maxlength="500" placeholder="o que aconteceu, numa frase — o observado, não a interpretação"></textarea>
+      </label>
+      <label class="field"><span>Medido</span><input class="input" name="medido" maxlength="120" placeholder="valor face ao alvo (opcional)" /></label>
+      <div class="row">
+        <label class="field"><span>Veredicto</span>
+          <select class="select" name="veredicto">
+            <option value="">escolhe…</option>
+            <option value="sustentada">sustentada</option>
+            <option value="refutada">refutada</option>
+            <option value="insuficiente">insuficiente · re-testar</option>
+          </select>
+        </label>
+        <label class="field"><span>Acção</span>
+          <select class="select" name="accao">
+            <option value="">escolhe…</option>
+            <option value="ajuste">ajuste → tarefa</option>
+            <option value="tema">tema → roadmap</option>
+            <option value="aprender">aprender → decisões</option>
+          </select>
+        </label>
+      </div>
+      <label class="field"><span>Destino</span><input class="input" name="destino" maxlength="120" placeholder="onde fica o seguimento (opcional)" /></label>
+      <label class="check" id="linha-actualizar"><input type="checkbox" name="actualizar" checked /> <span id="texto-actualizar"></span></label>
+      <p class="form__err" id="erro-sessao" aria-live="assertive"></p>
+      <div class="form__actions">
+        <button class="btn btn--text" type="button" data-fechar>Cancelar</button>
+        <button class="btn btn--primary" type="submit">Registar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <p class="toast" id="toast" role="status" hidden></p>
+
+  <script src="/js/core.js"></script>
+  <script src="/js/store.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>

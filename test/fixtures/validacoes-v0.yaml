@@ -1,0 +1,35 @@
+# LEDGER DE VALIDAÇÃO — CIC-2026-01 (spine §2.5)
+_meta: {ciclo: CIC-2026-01, actualizado: 2026-10-26}
+hipoteses:
+  - id: HIP-0001    # Roadmaps com taxonomia e S/M/L
+    origem: CON-0001
+    texto: "com taxonomia fixa, categorizar um tema demora menos de 1 minuto"
+    estado: sustentada
+    sessoes:
+      - data: 2026-10-20
+        tipo: levantamento
+        participantes: "1 utilizador"
+        sinal: "categorizou 5 temas sem hesitar; 1 atrás"
+        veredicto: sustentada
+        accao: {tipo: aprender}
+  - id: HIP-0002    # Roadmaps com taxonomia e S/M/L
+    origem: CON-0001
+    texto: "o eixo de alavanca muda a ordem em que o director escolhe temas"
+    estado: insuficiente
+    sessoes:
+      - data: 2026-10-21
+        tipo: levantamento
+        participantes: "1 utilizador"
+        sinal: "uma só sessão; a alavanca não pesou na escolha"
+        veredicto: insuficiente
+        accao: {tipo: ajuste, destino: TAR-0002}
+  - id: HIP-0003    # Ficha de contexto exportável por tarefa
+    origem: CON-0002
+    texto: "a sessão de IA arranca sem perguntas de contexto"
+    estado: aberta
+    sessoes: []
+  - id: HIP-0004    # Ficha de contexto exportável por tarefa
+    origem: CON-0002
+    texto: "a ficha cabe em menos de 400 linhas"
+    estado: aberta
+    sessoes: []
