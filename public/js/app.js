@@ -1,10 +1,14 @@
 'use strict';
-/* app.js — a interface do Veredicto. Todo o texto do utilizador entra por textContent (el()). */
+/* app.js — a interface do Veredicto. Todo o texto do utilizador entra por textContent (el()).
+ * Sem `?projecto=` → modo local (localStorage), como sempre. Com `?projecto=<uuid>` → modo monco:
+ * entrar com a conta monco, abrir a fatia `veredicto` do projecto (store.monco) e só depois arrancar. */
 (function () {
   var V = window.Veredicto;
-  var store = window.VeredictoStore.local(V);
-  var doc = store.ler();
-  var ui = { vista: 'hipoteses', filtro: 'todas', incremento: '*', editar: null, sessaoDe: null };
+  var projectoId = new URLSearchParams(location.search).get('projecto');
+  var store = null;
+  var doc = V.vazio();
+  var monco = null;   // { supa, id, casca, nome } em modo monco
+  var ui = { vista: 'hipoteses', filtro: 'todas', incremento: '*', editar: null, sessaoDe: null, soLeitura: false };
 
   var ROT_ESTADO = { aberta: 'aberta', sustentada: 'sustentada', refutada: 'refutada', insuficiente: 'insuficiente · re-testar' };
   var ROT_TIPO = { validacao: 'validação', levantamento: 'levantamento' };
@@ -37,8 +41,9 @@
 
   function aplicar(r, msg) {
     if (!r.ok) { avisar(r.erro); return false; }
+    if (ui.soLeitura) { avisar('só leitura — não gravado'); render(); return false; }
     doc = r.doc;
-    if (!store.escrever(doc)) avisar('não foi possível guardar neste browser — exporta para não perder');
+    if (!store.escrever(doc)) avisar(monco ? 'não foi possível gravar — só leitura' : 'não foi possível guardar neste browser — exporta para não perder');
     else if (msg) avisar(msg);
     render();
     return true;
@@ -72,7 +77,8 @@
   function cartaoHipotese(h) {
     var tags = [tag(h.estado, ROT_ESTADO[h.estado])];
     if (h.critica) tags.push(tag('critica', 'crítica'));
-    tags.push(tag('neutra', h.incremento ? nomeIncremento(h.incremento) : 'sem incremento'));
+    if (V.ligacaoPerdida(doc, h)) tags.push(tag('perdida', 'ligação perdida'));
+    else tags.push(tag('neutra', h.incremento ? nomeIncremento(h.incremento) : 'sem incremento'));
     if (h.origem) tags.push(tag('neutra', h.origem));
 
     var meta = [];
@@ -106,7 +112,7 @@
       el('h3', { class: 'card__title', text: h.aposta }),
       el('div', { class: 'card__meta' }, meta),
       h.sessoes.length ? el('ol', { class: 'sessions', 'aria-label': 'Sessões' }, h.sessoes.map(cartaoSessao)) : null,
-      el('div', { class: 'card__actions' }, accoes)
+      ui.soLeitura ? null : el('div', { class: 'card__actions' }, accoes)
     ]);
   }
 
@@ -132,7 +138,9 @@
     var hs = filtradas();
     if (!doc.hipoteses.length) {
       lista.appendChild(el('div', { class: 'empty' }, [
-        el('p', { text: 'Ainda não há hipóteses. Cria a primeira — com a métrica que a vai pôr à prova — ou importa um ficheiro pelo menu.' })
+        el('p', { text: ui.soLeitura ? 'Ainda não há hipóteses neste projecto.'
+          : monco ? 'Ainda não há hipóteses neste projecto. Cria a primeira — com a métrica que a vai pôr à prova.'
+          : 'Ainda não há hipóteses. Cria a primeira — com a métrica que a vai pôr à prova — ou importa um ficheiro pelo menu.' })
       ]));
       return;
     }
@@ -144,7 +152,7 @@
 
   function cartaoDecisao(titulo, hs, alvo, historico) {
     var sug = V.sugerir(hs);
-    var nome = 'dec-' + (alvo.incremento || alvo.hipotese);
+    var nome = 'dec-' + (alvo ? alvo.incremento || alvo.hipotese : 'perdida');
     var porque = el('textarea', { class: 'textarea', rows: '2', maxlength: '500', placeholder: 'porquê — o que nas sessões te leva a esta decisão', 'aria-label': 'Porquê' });
     var escolhas = el('fieldset', { class: 'choices' }, [el('legend', { class: 'sr', text: 'Decisão' })].concat(V.DECISOES.map(function (d) {
       return el('label', { class: 'choice' }, [el('input', { type: 'radio', name: nome, value: d, checked: sug.sugestao === d }), ROT_DEC[d]]);
@@ -157,14 +165,16 @@
       aplicar(r, 'decisão registada');
     } });
 
+    var podeDecidir = !ui.soLeitura && !!alvo;
     return el('article', { class: 'card' }, [
       el('h3', { class: 'card__title', text: titulo }),
-      el('div', { class: 'suggest' }, [el('span', { text: 'Sugestão:' }), tag(sug.sugestao, ROT_DEC[sug.sugestao]), el('span', { text: sug.motivo })]),
+      alvo ? el('div', { class: 'suggest' }, [el('span', { text: 'Sugestão:' }), tag(sug.sugestao, ROT_DEC[sug.sugestao]), el('span', { text: sug.motivo })])
+        : el('p', { class: 'form__hint', text: 'O incremento destas hipóteses foi apagado no Taskboards. Edita-as para as ligar a outro incremento ou deixá-las soltas.' }),
       el('ul', { class: 'hyps' }, hs.map(function (h) {
         return el('li', null, [tag(h.estado, ROT_ESTADO[h.estado]), el('span', { text: h.aposta + (h.critica ? '' : ' (não crítica)') })]);
       })),
-      escolhas, porque, erro,
-      el('div', { class: 'form__actions' }, [botao]),
+      podeDecidir ? escolhas : null, podeDecidir ? porque : null, podeDecidir ? erro : null,
+      podeDecidir ? el('div', { class: 'form__actions' }, [botao]) : null,
       historico.length ? el('ol', { class: 'history', 'aria-label': 'Decisões anteriores' }, historico.slice().reverse().map(function (x) {
         return el('li', null, [tag(x.decisao, ROT_DEC[x.decisao]), ' ', el('span', { class: 'mono', text: x.data }), ' — ', x.porque]);
       })) : null
@@ -181,6 +191,13 @@
       n++;
       box.appendChild(cartaoDecisao(inc.nome, hs, { incremento: inc.id }, doc.decisoes.filter(function (x) { return x.incremento === inc.id; })));
     });
+    var perdidas = doc.hipoteses.filter(function (h) { return V.ligacaoPerdida(doc, h); });
+    if (perdidas.length) {
+      n++;
+      box.appendChild(cartaoDecisao('Ligação perdida', perdidas, null, doc.decisoes.filter(function (x) {
+        return x.incremento && perdidas.some(function (h) { return h.incremento === x.incremento; });
+      })));
+    }
     doc.hipoteses.filter(function (h) { return !h.incremento; }).forEach(function (h) {
       n++;
       box.appendChild(cartaoDecisao('Hipótese solta: ' + h.aposta, [h], { hipotese: h.id }, doc.decisoes.filter(function (x) { return x.hipotese === h.id; })));
@@ -189,6 +206,8 @@
   }
 
   function render() {
+    $('btn-nova').hidden = ui.soLeitura;
+    if (monco) renderMonco();
     $('v-hipoteses').hidden = ui.vista !== 'hipoteses';
     $('v-decisoes').hidden = ui.vista !== 'decisoes';
     $('tab-hipoteses').setAttribute('aria-selected', String(ui.vista === 'hipoteses'));
@@ -214,6 +233,9 @@
     f.como.value = h && h.metrica ? h.metrica.como : '';
     f.incremento.value = h ? nomeIncremento(h.incremento) : (ui.incremento !== '*' && ui.incremento !== '' ? nomeIncremento(ui.incremento) : '');
     f.critica.checked = h ? h.critica : true;
+    $('ajuda-incremento').textContent = h && V.ligacaoPerdida(doc, h)
+      ? 'Ligação perdida: o incremento foi apagado no Taskboards. Escolhe outro ou deixa vazio.'
+      : monco ? 'Escolhe um incremento do projecto — os incrementos criam-se no Taskboards.' : 'Escreve um nome novo para criar o incremento.';
     $('erro-hip').textContent = '';
     $('dlg-hip').showModal();
     f.aposta.focus();
@@ -226,7 +248,7 @@
       id: ui.editar, aposta: f.aposta.value, problema: f.problema.value, utilizador: f.utilizador.value,
       metrica: { indicador: f.indicador.value, alvo: f.alvo.value, como: f.como.value },
       incrementoNome: f.incremento.value, critica: f.critica.checked
-    });
+    }, { criarIncremento: !monco });
     if (!r.ok) { $('erro-hip').textContent = r.erro; return; }
     $('dlg-hip').close();
     aplicar(r, ui.editar ? 'hipótese actualizada' : 'hipótese criada');
@@ -310,7 +332,156 @@
   $('btn-export-json').addEventListener('click', function () { fecharMenu(); descarregar('veredicto-' + V.hoje() + '.json', 'application/json', V.exportarJSON(doc)); });
   $('btn-export-md').addEventListener('click', function () { fecharMenu(); descarregar('veredicto-' + V.hoje() + '.md', 'text/markdown', V.exportarMarkdown(doc)); });
   document.addEventListener('click', function (e) { if (!$('menu').contains(e.target)) fecharMenu(); });
-  store.aoMudar(function (novo) { doc = novo; render(); });
 
-  render();
+  /* ── modo monco ──────────────────────────────────────────────────────── */
+
+  function ha(iso) {
+    var t = Date.parse(iso);
+    if (isNaN(t)) return '';
+    var min = Math.round((Date.now() - t) / 60000);
+    if (min < 1) return 'há instantes';
+    if (min < 60) return 'há ' + min + ' min';
+    if (min < 60 * 24) return 'há ' + Math.round(min / 60) + ' h';
+    return 'em ' + new Date(t).toLocaleDateString('pt-PT');
+  }
+
+  var ROT_FASE = { 'gravado': 'gravado', 'por-gravar': 'por gravar…', 'a-gravar': 'a gravar…', 'conflito': 'conflito', 'erro': 'não gravado' };
+
+  function renderMonco() {
+    if (!store || store.nome !== 'monco') return;
+    var e = store.estado();
+    var est = $('monco-estado');
+    est.textContent = ui.soLeitura ? 'só leitura' : ROT_FASE[e.fase] + (e.fase === 'gravado' && e.versao ? ' · versão ' + e.versao : '');
+    est.className = 'state' + (e.fase === 'conflito' || e.fase === 'erro' ? ' state--warn' : '');
+    var b = $('monco-aviso');
+    b.textContent = '';
+    if (e.conflito) {
+      var c = e.conflito;
+      var u = monco.supa.utilizador();
+      var quem = u && c.por === u.id ? 'Gravaste noutra aba ou noutro browser' : (c.nome || '…') + ' gravou';
+      b.appendChild(el('p', { text: quem + ' ' + ha(c.em) + ' (versão ' + c.versao + '), depois de abrires. As tuas alterações ainda não foram gravadas.' }));
+      b.appendChild(el('div', { class: 'banner__actions' }, [
+        el('button', { class: 'btn btn--sm', type: 'button', text: 'Usar a versão deles', onclick: function () {
+          doc = store.usarDeles(); avisar('carregada a versão ' + store.estado().versao); render();
+        } }),
+        el('button', { class: 'btn btn--primary btn--sm', type: 'button', text: 'Gravar por cima', onclick: function () { store.gravarPorCima(); } })
+      ]));
+    } else if (e.erro) {
+      b.appendChild(el('p', { text: 'Não foi possível gravar: ' + e.erro }));
+      b.appendChild(el('div', { class: 'banner__actions' }, [
+        el('button', { class: 'btn btn--primary btn--sm', type: 'button', text: 'Tentar de novo', onclick: function () { store.gravarJa(); } })
+      ]));
+    } else if (ui.soLeitura) {
+      b.appendChild(el('p', { text: e.acesso === 'leitor' ? 'Só leitura: és leitor neste projecto.' : 'Só leitura: o teu acesso a este projecto não inclui o Veredicto.' }));
+    }
+    b.hidden = !b.firstChild;
+  }
+
+  function porta(nodos) {
+    var p = $('monco-porta');
+    p.textContent = '';
+    nodos.forEach(function (n) { if (n) p.appendChild(n); });
+    p.hidden = false;
+    $('principal').hidden = true;
+  }
+
+  function urlCasca() { return monco.casca + '/app#/p/' + encodeURIComponent(monco.id) + '/apps'; }
+
+  function portaErro(msg) {
+    porta([el('div', { class: 'card porta__card' }, [
+      el('h1', { class: 'porta__titulo', text: 'Não foi possível abrir o projecto' }),
+      el('p', { class: 'form__hint', text: msg }),
+      el('div', { class: 'form__actions' }, [
+        monco.supa && monco.supa.utilizador() ? el('button', { class: 'btn btn--text', type: 'button', text: 'Entrar com outra conta', onclick: function () {
+          monco.supa.sair().then(function () { portaEntrar(); });
+        } }) : null,
+        el('a', { class: 'btn', href: urlCasca(), text: 'Voltar à Casca' })
+      ])
+    ])]);
+  }
+
+  function portaEntrar(msg) {
+    var email = el('input', { class: 'input', type: 'email', name: 'email', autocomplete: 'email', placeholder: 'nome@monco.io', 'aria-label': 'Email monco' });
+    var erro = el('p', { class: 'form__err', 'aria-live': 'assertive', text: msg || '' });
+    var botao = el('button', { class: 'btn btn--primary', type: 'submit', text: 'Enviar link' });
+    var form = el('form', { class: 'porta__form', novalidate: true }, [email, botao]);
+    form.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var v = email.value.trim().toLowerCase();
+      if (!/^[^\s@]+@monco\.io$/.test(v)) { erro.textContent = 'só contas @monco.io'; return; }
+      botao.disabled = true; erro.textContent = '';
+      monco.supa.enviarLink(v, location.origin + location.pathname + '?projecto=' + encodeURIComponent(monco.id)).then(function () {
+        porta([el('div', { class: 'card porta__card' }, [
+          el('h1', { class: 'porta__titulo', text: 'Vê o teu email' }),
+          el('p', { class: 'form__hint', text: 'Enviámos um link para ' + v + '. Abre-o neste browser para entrar no projecto.' })
+        ])]);
+      }, function (e) { erro.textContent = e.message; botao.disabled = false; });
+    });
+    porta([el('div', { class: 'card porta__card' }, [
+      el('h1', { class: 'porta__titulo', text: 'Entrar com a conta monco' }),
+      el('p', { class: 'form__hint', text: 'Para abrir este projecto no Veredicto. Enviamos um link de entrada para o teu email @monco.io.' }),
+      form, erro,
+      el('p', { class: 'form__hint' }, [el('a', { class: 'link', href: '/', text: 'Usar o Veredicto sem projecto' }), ' — os dados ficam neste browser.'])
+    ])]);
+    email.focus();
+  }
+
+  function abrirProjecto() {
+    porta([el('p', { class: 'porta__a-abrir', text: 'A abrir o projecto…' })]);
+    var s = window.VeredictoStore.monco(V, monco.supa, monco.id);
+    s.abrir().then(function (info) {
+      store = s;
+      monco.nome = info.nome;
+      ui.soLeitura = !info.podeEscrever;
+      $('monco-porta').hidden = true;
+      $('principal').hidden = false;
+      $('monco-barra').hidden = false;
+      $('monco-nome').textContent = info.nome;
+      $('monco-casca').href = urlCasca();
+      $('btn-importar').hidden = true;
+      $('foot').textContent = 'Os dados ficam no projecto monco «' + info.nome + '» (fatia veredicto); os incrementos vêm do Taskboards. · Veredicto v1 · etapa Validar do método monco';
+      document.title = info.nome + ' · Veredicto';
+      store.aoEstado(renderMonco);
+      arrancar();
+    }, function (e) {
+      if (e && e.status === 401) return monco.supa.sair().then(function () { portaEntrar('A sessão expirou — entra de novo.'); });
+      portaErro(e && e.message ? e.message : 'erro desconhecido');
+    });
+  }
+
+  function iniciarMonco() {
+    var cfg = window.MONCO_CONFIG || {};
+    monco = { supa: null, id: String(projectoId).toLowerCase(), casca: String(cfg.cascaUrl || 'https://nimble.monco.io').replace(/\/+$/, ''), nome: '' };
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(monco.id)) return portaErro('O endereço não traz um projecto válido.');
+    if (!cfg.supabaseUrl || !window.Supa) return portaErro('Falta a configuração do Supabase.');
+    monco.supa = window.Supa.criar({ url: cfg.supabaseUrl, key: cfg.supabaseKey });
+    function limparHash() { history.replaceState(null, '', location.pathname + location.search); }
+    var passo = monco.supa.lerHash(location.hash) ? monco.supa.entrarComHash(location.hash).then(limparHash) : Promise.resolve();
+    passo.then(function () {
+      if (!monco.supa.utilizador()) return portaEntrar();
+      abrirProjecto();
+    }, function (e) { limparHash(); portaEntrar('O link falhou: ' + e.message); });
+  }
+
+  $('btn-sair').addEventListener('click', function () {
+    if (store && store.porGravar && store.porGravar() && !window.confirm('Há alterações por gravar. Sair mesmo assim?')) return;
+    monco.supa.sair().then(function () { location.reload(); });
+  });
+  window.addEventListener('beforeunload', function (ev) {
+    if (store && store.porGravar && store.porGravar()) { store.gravarJa(); ev.preventDefault(); ev.returnValue = ''; }
+  });
+
+  function arrancar() {
+    doc = store.ler();
+    store.aoMudar(function (novo, info) {
+      doc = novo;
+      if (info && info.nome) avisar('versão ' + info.versao + ' carregada — gravada por ' + info.nome);
+      else if (info && info.incrementos) avisar('incrementos actualizados a partir do Taskboards');
+      render();
+    });
+    render();
+  }
+
+  if (projectoId) iniciarMonco();
+  else { store = window.VeredictoStore.local(V); arrancar(); }
 })();

@@ -175,6 +175,25 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 .foot { margin: 40px 0 24px; color: var(--subtle); font-size: 13px; }
 
+/* ── modo monco: barra do projecto, avisos, entrar ─────────────────────── */
+.projbar { border-top: 1px solid var(--border); }
+.projbar__in { display: flex; align-items: center; gap: 10px; min-height: 40px; min-width: 0; }
+.crumb { flex: none; color: var(--primary); font-size: 13px; font-weight: 600; text-decoration: none; }
+.crumb:hover { text-decoration: underline; }
+.projbar__nome { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; font-weight: 600; }
+.state { flex: none; color: var(--subtle); font-size: 12px; white-space: nowrap; }
+.state--warn { color: var(--warn); }
+.banner { display: grid; gap: 8px; margin-top: 16px; padding: 12px 14px; border: 1px solid var(--warn); border-radius: var(--r-md); background: var(--warn-soft); font-size: 14px; overflow-wrap: anywhere; }
+.banner__actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag--perdida { background: var(--warn-soft); color: var(--warn); }
+.porta { padding-top: 48px; padding-bottom: 48px; }
+.porta__card { display: grid; gap: 12px; max-width: 440px; margin: 0 auto; padding: 20px; }
+.porta__titulo { font-size: 18px; font-weight: 600; }
+.porta__form { display: flex; gap: 8px; }
+.porta__form .input { flex: 1; min-width: 0; }
+.porta__a-abrir { text-align: center; color: var(--muted); }
+.link { color: var(--primary); }
+
 @media (max-width: 600px) {
   .row { grid-template-columns: 1fr; }
   .toolbar .select { flex: 1; }

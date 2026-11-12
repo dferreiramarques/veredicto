@@ -39,9 +39,21 @@
       </details>
       <input type="file" id="ficheiro" accept=".json,.yaml,.yml,application/json,text/yaml" hidden />
     </div>
+    <div class="projbar" id="monco-barra" hidden>
+      <div class="wrap projbar__in">
+        <a class="crumb" id="monco-casca" href="https://nimble.monco.io/app">← Casca</a>
+        <span class="projbar__nome" id="monco-nome"></span>
+        <span class="grow"></span>
+        <span class="state" id="monco-estado" aria-live="polite"></span>
+        <button class="btn btn--text btn--sm" type="button" id="btn-sair">Sair</button>
+      </div>
+    </div>
   </header>
 
-  <main class="wrap">
+  <section class="wrap porta" id="monco-porta" aria-live="polite" hidden></section>
+
+  <main class="wrap" id="principal">
+    <div class="banner" id="monco-aviso" role="alert" hidden></div>
     <div class="tabs" role="tablist" aria-label="Vistas">
       <button class="tab" role="tab" id="tab-hipoteses" aria-controls="v-hipoteses" aria-selected="true" type="button">Hipóteses</button>
       <button class="tab" role="tab" id="tab-decisoes" aria-controls="v-decisoes" aria-selected="false" type="button">Decisões</button>
@@ -68,7 +80,7 @@
       <div class="list" id="decisoes"></div>
     </section>
 
-    <p class="foot">Os dados ficam neste browser. Exporta para guardar ou levar para outro lado. · Veredicto v1 · etapa Validar do método monco</p>
+    <p class="foot" id="foot">Os dados ficam neste browser. Exporta para guardar ou levar para outro lado. · Veredicto v1 · etapa Validar do método monco</p>
   </main>
 
   <dialog class="dialog" id="dlg-hip" aria-labelledby="dlg-hip-titulo">
@@ -92,7 +104,7 @@
       <div class="row">
         <label class="field"><span>Incremento</span>
           <input class="input" name="incremento" list="lista-incrementos" maxlength="120" placeholder="vazio = hipótese solta (spike)" />
-          <small>Escreve um nome novo para criar o incremento.</small>
+          <small id="ajuda-incremento">Escreve um nome novo para criar o incremento.</small>
         </label>
         <label class="check"><input type="checkbox" name="critica" checked /> <span>Crítica — pesa na decisão do incremento</span></label>
       </div>
@@ -153,6 +165,8 @@
 
   <p class="toast" id="toast" role="status" hidden></p>
 
+  <script src="/config.js"></script>
+  <script src="/js/supa.js"></script>
   <script src="/js/core.js"></script>
   <script src="/js/store.js"></script>
   <script src="/js/app.js"></script>

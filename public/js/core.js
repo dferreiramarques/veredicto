@@ -20,6 +20,7 @@
   var LIM = { texto: 500, curto: 120, hipoteses: 500, sessoes: 200, decisoes: 500, incrementos: 200 };
   var RE_DATA = /^\d{4}-\d{2}-\d{2}$/;
   var RE_ID = /^[a-z]{3}_[a-z0-9]{4,24}$/;
+  var RE_ID_EXT = /^[A-Za-z0-9_-]{1,64}$/;   // ids de incrementos que vêm de fora (boards do Taskboards)
 
   function txt(v, max) { return v == null ? '' : String(v).replace(/\s+/g, ' ').trim().slice(0, max || LIM.texto); }
   function copia(o) { return JSON.parse(JSON.stringify(o)); }
@@ -53,9 +54,12 @@
     };
   }
 
-  function limpar(entrada) {
+  /* opcoes.incrementos (modo monco): a lista de incrementos vem de fora, só de leitura — os ids ficam como vêm
+     (se forem seguros) e uma ligação a um incremento que deixou de existir é preservada («ligação perdida»). */
+  function limpar(entrada, opcoes) {
     var d = vazio();
-    if (!entrada || typeof entrada !== 'object') return d;
+    var ext = opcoes && Array.isArray(opcoes.incrementos) ? opcoes.incrementos : null;
+    if (!entrada || typeof entrada !== 'object') entrada = {};
     d.actualizado = Number(entrada.actualizado) || 0;
     var vistos = {};
     function idUnico(id, prefixo) {
@@ -64,19 +68,27 @@
       vistos[i] = true;
       return i;
     }
-    (Array.isArray(entrada.incrementos) ? entrada.incrementos : []).slice(0, LIM.incrementos).forEach(function (inc) {
-      var nome = txt(inc && inc.nome, LIM.curto);
-      if (nome) d.incrementos.push({ id: idUnico(inc.id, 'inc'), nome: nome });
-    });
+    if (ext) {
+      ext.slice(0, LIM.incrementos).forEach(function (inc) {
+        var id = String(inc && inc.id), nome = txt(inc && inc.nome, LIM.curto);
+        if (nome && RE_ID_EXT.test(id) && !vistos[id]) { vistos[id] = true; d.incrementos.push({ id: id, nome: nome }); }
+      });
+    } else {
+      (Array.isArray(entrada.incrementos) ? entrada.incrementos : []).slice(0, LIM.incrementos).forEach(function (inc) {
+        var nome = txt(inc && inc.nome, LIM.curto);
+        if (nome) d.incrementos.push({ id: idUnico(inc.id, 'inc'), nome: nome });
+      });
+    }
     var incs = {};
     d.incrementos.forEach(function (i) { incs[i.id] = true; });
+    function refInc(id) { return incs[id] ? id : (ext && id != null && RE_ID_EXT.test(String(id)) ? String(id) : null); }
     (Array.isArray(entrada.hipoteses) ? entrada.hipoteses : []).slice(0, LIM.hipoteses).forEach(function (h) {
       if (!h || typeof h !== 'object') return;
       var aposta = txt(h.aposta || h.texto);
       if (!aposta) return;
       d.hipoteses.push({
         id: idUnico(h.id, 'hip'),
-        incremento: incs[h.incremento] ? h.incremento : null,
+        incremento: refInc(h.incremento),
         feature: txt(h.feature, LIM.curto) || null,
         origem: txt(h.origem, LIM.curto) || null,
         problema: txt(h.problema),
@@ -92,7 +104,7 @@
     d.hipoteses.forEach(function (h) { hips[h.id] = true; });
     (Array.isArray(entrada.decisoes) ? entrada.decisoes : []).slice(0, LIM.decisoes).forEach(function (x) {
       if (!x || DECISOES.indexOf(x.decisao) < 0) return;
-      var inc = incs[x.incremento] ? x.incremento : null;
+      var inc = refInc(x.incremento);
       var hip = !inc && hips[x.hipotese] ? x.hipotese : null;
       var porque = txt(x.porque);
       if ((!inc && !hip) || !porque) return;
@@ -107,6 +119,7 @@
 
   /* ---- consultas -------------------------------------------------------- */
 
+  function ligacaoPerdida(doc, h) { return !!h.incremento && !doc.incrementos.some(function (i) { return i.id === h.incremento; }); }
   function porTestar(h) { return h.estado === 'aberta' || h.estado === 'insuficiente'; }
   function metricaCompleta(m) { return !!(m && m.indicador && m.alvo); }
   function seguintes(estado) { return (SEGUINTES[estado] || []).slice(); }
@@ -136,12 +149,13 @@
 
   function carimbar(d) { d.actualizado = Date.now(); return { ok: true, doc: d }; }
 
-  function garantirIncremento(doc, nome) {
+  function garantirIncremento(doc, nome, criar) {
     var n = txt(nome, LIM.curto);
     if (!n) return { ok: true, doc: copia(doc), id: null };
     var d = copia(doc);
     var e = d.incrementos.filter(function (i) { return i.nome.toLowerCase() === n.toLowerCase(); })[0];
     if (e) return { ok: true, doc: d, id: e.id };
+    if (criar === false) return erro('não há o incremento «' + n + '» — os incrementos criam-se no Taskboards');
     if (d.incrementos.length >= LIM.incrementos) return erro('limite de incrementos atingido');
     var id = novoId('inc');
     d.incrementos.push({ id: id, nome: n });
@@ -154,10 +168,11 @@
     return null;
   }
 
-  function guardarHipotese(doc, campos) {
+  /* opcoes.criarIncremento === false (modo monco): um nome de incremento desconhecido é recusado. */
+  function guardarHipotese(doc, campos, opcoes) {
     var problema = validarCampos(campos);
     if (problema) return erro(problema);
-    var r = garantirIncremento(doc, campos.incrementoNome);
+    var r = garantirIncremento(doc, campos.incrementoNome, !(opcoes && opcoes.criarIncremento === false));
     if (!r.ok) return r;
     var d = r.doc;
     var dados = {
@@ -341,7 +356,7 @@
 
   var api = {
     ESTADOS: ESTADOS, VEREDICTOS: VEREDICTOS, TIPOS_SESSAO: TIPOS_SESSAO, ACCOES: ACCOES, DECISOES: DECISOES,
-    vazio: vazio, limpar: limpar, porTestar: porTestar, metricaCompleta: metricaCompleta, seguintes: seguintes,
+    vazio: vazio, limpar: limpar, ligacaoPerdida: ligacaoPerdida, porTestar: porTestar, metricaCompleta: metricaCompleta, seguintes: seguintes,
     hipotese: hipotese, doIncremento: doIncremento, contagem: contagem, sugerir: sugerir,
     guardarHipotese: guardarHipotese, apagarHipotese: apagarHipotese, mudarEstado: mudarEstado,
     registarSessao: registarSessao, decidir: decidir,
