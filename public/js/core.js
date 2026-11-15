@@ -168,15 +168,19 @@
     return null;
   }
 
-  /* opcoes.criarIncremento === false (modo monco): um nome de incremento desconhecido é recusado. */
+  /* opcoes.criarIncremento === false (modo monco): um nome de incremento desconhecido é recusado.
+     Ao editar uma hipótese com ligação perdida, o campo vazio mantém a ligação; só campos.desligar a tira. */
   function guardarHipotese(doc, campos, opcoes) {
     var problema = validarCampos(campos);
     if (problema) return erro(problema);
     var r = garantirIncremento(doc, campos.incrementoNome, !(opcoes && opcoes.criarIncremento === false));
     if (!r.ok) return r;
     var d = r.doc;
+    var antiga = campos.id ? hipotese(d, campos.id) : null;
+    var idInc = r.id;
+    if (!idInc && antiga && !campos.desligar && ligacaoPerdida(d, antiga)) idInc = antiga.incremento;
     var dados = {
-      incremento: r.id, problema: txt(campos.problema), utilizador: txt(campos.utilizador, LIM.curto),
+      incremento: idInc, problema: txt(campos.problema), utilizador: txt(campos.utilizador, LIM.curto),
       aposta: txt(campos.aposta), metrica: limparMetrica(campos.metrica), critica: campos.critica !== false
     };
     if (campos.id) {

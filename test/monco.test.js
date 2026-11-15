@@ -230,3 +230,19 @@ test('server: /config.js com o Supabase e a Casca por env, e a CSP deixa ligar a
   assert.match(cfg, /"supabaseUrl":"https:\/\/[a-z]+\.supabase\.co","supabaseKey":"sb_publishable_[^"]+","cascaUrl":"https:\/\/nimble\.monco\.io"/);
   assert.doesNotMatch(cfg, /service_role|sb_secret/);
 });
+
+test('ligação perdida: editar com o incremento vazio mantém-na; só «desligar» a tira', () => {
+  let d = Core.limpar({ incrementos: [{ id: 'inc_a', nome: 'A' }] });
+  d = Core.guardarHipotese(d, Object.assign({}, HIP, { incrementoNome: 'A' })).doc;
+  const id = d.hipoteses[0].id;
+  const inc = d.hipoteses[0].incremento;
+  d = Core.limpar(d, { incrementos: [] });                       // a board foi apagada no Taskboards
+  assert.equal(Core.ligacaoPerdida(d, d.hipoteses[0]), true);
+  const editada = Core.guardarHipotese(d, Object.assign({}, HIP, { id, aposta: 'outra aposta', incrementoNome: '' }), { criarIncremento: false });
+  assert.ok(editada.ok);
+  assert.ok(inc);
+  assert.equal(editada.doc.hipoteses[0].incremento, inc);
+  assert.equal(editada.doc.hipoteses[0].aposta, 'outra aposta');
+  const desligada = Core.guardarHipotese(d, Object.assign({}, HIP, { id, incrementoNome: '', desligar: true }), { criarIncremento: false });
+  assert.equal(desligada.doc.hipoteses[0].incremento, null);
+});

@@ -233,8 +233,11 @@
     f.como.value = h && h.metrica ? h.metrica.como : '';
     f.incremento.value = h ? nomeIncremento(h.incremento) : (ui.incremento !== '*' && ui.incremento !== '' ? nomeIncremento(ui.incremento) : '');
     f.critica.checked = h ? h.critica : true;
-    $('ajuda-incremento').textContent = h && V.ligacaoPerdida(doc, h)
-      ? 'Ligação perdida: o incremento foi apagado no Taskboards. Escolhe outro ou deixa vazio.'
+    var perdida = !!(h && V.ligacaoPerdida(doc, h));
+    $('campo-desligar').hidden = !perdida;
+    f.desligar.checked = false;
+    $('ajuda-incremento').textContent = perdida
+      ? 'Ligação perdida: o incremento foi apagado no Taskboards. Vazio mantém a ligação; escolhe outro ou marca «desligar».'
       : monco ? 'Escolhe um incremento do projecto — os incrementos criam-se no Taskboards.' : 'Escreve um nome novo para criar o incremento.';
     $('erro-hip').textContent = '';
     $('dlg-hip').showModal();
@@ -247,7 +250,7 @@
     var r = V.guardarHipotese(doc, {
       id: ui.editar, aposta: f.aposta.value, problema: f.problema.value, utilizador: f.utilizador.value,
       metrica: { indicador: f.indicador.value, alvo: f.alvo.value, como: f.como.value },
-      incrementoNome: f.incremento.value, critica: f.critica.checked
+      incrementoNome: f.incremento.value, critica: f.critica.checked, desligar: f.desligar.checked
     }, { criarIncremento: !monco });
     if (!r.ok) { $('erro-hip').textContent = r.erro; return; }
     $('dlg-hip').close();
@@ -439,6 +442,8 @@
       $('monco-nome').textContent = info.nome;
       $('monco-casca').href = urlCasca();
       $('btn-importar').hidden = true;
+      $('btn-export-json').textContent = 'Exportar para o Veredicto standalone (JSON)';
+      $('btn-export-json').title = 'Inclui os nomes dos incrementos do projecto, para as ligações abrirem fora da monco';
       $('foot').textContent = 'Os dados ficam no projecto monco «' + info.nome + '» (fatia veredicto); os incrementos vêm do Taskboards. · Veredicto v1 · etapa Validar do método monco';
       document.title = info.nome + ' · Veredicto';
       store.aoEstado(renderMonco);
