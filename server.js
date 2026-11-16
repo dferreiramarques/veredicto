@@ -37,6 +37,11 @@ function createApp(opts) {
     res.set({ 'Content-Type': 'text/javascript; charset=utf-8', 'Cache-Control': 'no-cache' });
     res.send(configJs);
   });
+  // links antigos (e da Casca) abriam a app em `/?projecto=…`: levam-nos para /app
+  app.get('/', (req, res, next) => {
+    if (req.query.projecto === undefined) return next();
+    res.redirect(302, '/app' + req.originalUrl.slice(1));
+  });
   app.use(express.static(dir, { index: 'index.html', extensions: ['html'] }));
   app.use((req, res) => res.status(404).sendFile(path.join(dir, 'index.html')));
   return app;

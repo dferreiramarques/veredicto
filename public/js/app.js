@@ -313,6 +313,7 @@
   function fecharMenu() { $('menu').open = false; }
 
   $('btn-nova').addEventListener('click', function () { abrirHipotese(null); });
+  $('btn-ajuda').addEventListener('click', function () { $('dlg-ajuda').showModal(); });
   $('form-hip').addEventListener('submit', guardarHipotese);
   $('form-sessao').addEventListener('submit', registarSessao);
   $('form-sessao').veredicto.addEventListener('change', actualizarLinhaEstado);
@@ -419,7 +420,7 @@
       el('h1', { class: 'porta__titulo', text: 'Entrar com a conta monco' }),
       el('p', { class: 'form__hint', text: 'Para abrir este projecto no Veredicto. Enviamos um link de entrada para o teu email @monco.io.' }),
       form, erro,
-      el('p', { class: 'form__hint' }, [el('a', { class: 'link', href: '/', text: 'Usar o Veredicto sem projecto' }), ' — os dados ficam neste browser.'])
+      el('p', { class: 'form__hint' }, [el('a', { class: 'link', href: '/app', text: 'Usar o Veredicto sem projecto' }), ' — os dados ficam neste browser.'])
     ])]);
     email.focus();
   }

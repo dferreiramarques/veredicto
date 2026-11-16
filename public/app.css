@@ -136,6 +136,15 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .form__err { color: var(--bad); font-size: 14px; min-height: 1.5em; }
 .form__actions { display: flex; justify-content: flex-end; gap: 8px; }
 
+/* ajuda ("?") */
+.help-btn { font-weight: 600; font-size: 15px; }
+.help__section { display: grid; gap: 12px; }
+.help__row { display: flex; align-items: flex-start; gap: 12px; font-size: 13px; line-height: 1.5; color: var(--muted); }
+.help__row > div { min-width: 0; overflow-wrap: anywhere; }
+.help__row strong { color: var(--text); font-weight: 600; }
+.help__icon { flex: none; width: 20px; text-align: center; color: var(--primary); font-size: 15px; line-height: 1.4; }
+.help__divider { height: 1px; background: var(--border); }
+
 /* avisos: NimbleUI.toast (nimble/behaviors.js) */
 .toasts { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 100; display: flex; flex-direction: column; gap: 6px; align-items: center; pointer-events: none; max-width: calc(100vw - 2 * var(--gutter)); }
 .toast { max-width: calc(100vw - 2 * var(--gutter)); padding: 10px 16px; border-radius: var(--r-md); background: var(--text); color: var(--bg); font-size: 14px; box-shadow: var(--sh-lg); }
