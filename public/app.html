@@ -32,16 +32,16 @@
       <button class="btn btn--text btn--icon" type="button" id="btn-instalar" data-install aria-label="Instalar aplicação" title="Instalar aplicação" hidden></button>
       <button class="btn btn--text btn--icon help-btn" type="button" id="btn-ajuda" aria-label="Como funciona" title="Como funciona">?</button>
       <button class="btn btn--text btn--icon" type="button" data-theme-toggle data-theme-icon aria-label="Alternar tema claro / escuro" title="Tema"></button>
-      <details class="menu" id="menu">
-        <summary class="btn btn--text btn--icon" aria-label="Menu" title="Menu">
+      <div class="menu-wrap">
+        <button class="btn btn--text btn--icon" type="button" id="btn-menu" data-menu-toggle="#menu" aria-haspopup="menu" aria-expanded="false" aria-label="Menu" title="Menu">
           <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
-        </summary>
-        <div class="menu__list">
-          <button class="btn btn--text" type="button" id="btn-importar">Importar ficheiro…</button>
-          <button class="btn btn--text" type="button" id="btn-export-json">Exportar dados (JSON)</button>
-          <button class="btn btn--text" type="button" id="btn-export-md">Exportar relatório (Markdown)</button>
+        </button>
+        <div class="menu menu--end" id="menu" role="menu" hidden>
+          <button class="menu__item" type="button" role="menuitem" id="btn-importar">Importar ficheiro…</button>
+          <button class="menu__item" type="button" role="menuitem" id="btn-export-json">Exportar dados (JSON)</button>
+          <button class="menu__item" type="button" role="menuitem" id="btn-export-md">Exportar relatório (Markdown)</button>
         </div>
-      </details>
+      </div>
       <input type="file" id="ficheiro" accept=".json,.yaml,.yml,application/json,text/yaml" hidden />
     </div>
     <div class="projbar" id="monco-barra" hidden>
