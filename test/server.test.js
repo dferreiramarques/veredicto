@@ -44,3 +44,17 @@ test('tema: blocos [data-theme] só têm propriedades de cor', () => {
     for (const p of props) assert.ok(p.startsWith('--') || p === 'color-scheme', 'propriedade não-cor no tema: ' + p);
   }
 });
+
+test('kit nimbleUI: ficheiros servidos, páginas carregam-no e o tema do kit só tem cor', async () => {
+  const s = await servir();
+  try {
+    const base = s.url;
+    for (const f of ['tokens.css', 'theme.js', 'behaviors.js']) assert.equal((await fetch(base + '/nimble/' + f)).status, 200, f);
+    const html = fs.readFileSync(path.join(__dirname, '..', 'public', 'index.html'), 'utf8');
+    assert.ok(html.includes('/nimble/tokens.css') && html.includes('/nimble/theme.js') && html.includes('/nimble/behaviors.js'));
+    const tokens = fs.readFileSync(path.join(__dirname, '..', 'public', 'nimble', 'tokens.css'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+    for (const [, body] of tokens.matchAll(/\[data-theme[^{]*\{([^}]*)\}/g)) {
+      for (const d of body.split(';').map((x) => x.trim()).filter(Boolean)) assert.match(d, /^(--[a-z0-9-]+|color-scheme)\s*:/, 'não-cor num bloco de tema: ' + d);
+    }
+  } finally { s.fechar(); }
+});

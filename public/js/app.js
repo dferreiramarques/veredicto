@@ -31,13 +31,8 @@
   }
   function tag(classe, texto) { return el('span', { class: 'tag tag--' + classe, text: texto }); }
 
-  var temporizador;
-  function avisar(m) {
-    var t = $('toast');
-    t.textContent = m; t.hidden = false;
-    clearTimeout(temporizador);
-    temporizador = setTimeout(function () { t.hidden = true; }, 3200);
-  }
+  // avisos: nimble toast (a mesma mensagem seguida mostra-se como ×n)
+  function avisar(m) { NimbleUI.toast(m, { duration: 3200 }); }
 
   function aplicar(r, msg) {
     if (!r.ok) { avisar(r.erro); return false; }
