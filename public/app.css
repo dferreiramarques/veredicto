@@ -30,10 +30,11 @@
   --text: #18181b;
   --muted: #52525b;
   --subtle: #71717a;
-  --primary: #6366f1;
-  --primary-h: #4f46e5;
-  --primary-ink: #ffffff;
-  --primary-soft: rgba(99, 102, 241, .14);
+  --primary: #d9a21b;
+  --primary-h: #c48d0f;
+  --primary-ink: #2a1d00;
+  --primary-fg: #8a5f00;
+  --primary-soft: rgba(217, 162, 27, .16);
   --shadow-c: rgba(24, 24, 27, .10);
   --overlay: rgba(24, 24, 27, .45);
   --ok: #059669; --ok-soft: rgba(5, 150, 105, .12);
@@ -52,10 +53,11 @@
   --text: #fafafa;
   --muted: #a1a1aa;
   --subtle: #8b8b94;
-  --primary: #818cf8;
-  --primary-h: #a5b4fc;
-  --primary-ink: #1e1b4b;
-  --primary-soft: rgba(129, 140, 248, .16);
+  --primary: #f0bf3c;
+  --primary-h: #f6cf63;
+  --primary-ink: #2a1d00;
+  --primary-fg: #f0bf3c;
+  --primary-soft: rgba(240, 191, 60, .16);
   --shadow-c: rgba(0, 0, 0, .55);
   --overlay: rgba(0, 0, 0, .6);
   --ok: #34d399; --ok-soft: rgba(52, 211, 153, .14);
@@ -124,7 +126,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .tag--refutada, .tag--matar { background: var(--bad-soft); color: var(--bad); }
 .tag--insuficiente, .tag--ajustar, .tag--ainda-nao { background: var(--warn-soft); color: var(--warn); }
 .tag--neutra { background: var(--surface-2); color: var(--muted); }
-.tag--critica { background: var(--primary-soft); color: var(--primary); }
+.tag--critica { background: var(--primary-soft); color: var(--primary-fg); }
 
 /* ── cartões ───────────────────────────────────────────────────────────── */
 .list { display: grid; gap: 12px; }
@@ -178,7 +180,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* ── modo monco: barra do projecto, avisos, entrar ─────────────────────── */
 .projbar { border-top: 1px solid var(--border); }
 .projbar__in { display: flex; align-items: center; gap: 10px; min-height: 40px; min-width: 0; }
-.crumb { flex: none; color: var(--primary); font-size: 13px; font-weight: 600; text-decoration: none; }
+.crumb { flex: none; color: var(--primary-fg); font-size: 13px; font-weight: 600; text-decoration: none; }
 .crumb:hover { text-decoration: underline; }
 .projbar__nome { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; font-weight: 600; }
 .state { flex: none; color: var(--subtle); font-size: 12px; white-space: nowrap; }
@@ -192,7 +194,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .porta__form { display: flex; gap: 8px; }
 .porta__form .input { flex: 1; min-width: 0; }
 .porta__a-abrir { text-align: center; color: var(--muted); }
-.link { color: var(--primary); }
+.link { color: var(--primary-fg); }
 
 @media (max-width: 600px) {
   .row { grid-template-columns: 1fr; }
