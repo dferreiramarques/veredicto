@@ -1,4 +1,4 @@
-/* Copiado de nimble/app/js/supa.js (commit 624a8db) em 2026-11-12 — sem pacote partilhado nem build.
+/* Copiado de nimble/app/js/supa.js em 2026-11-16 — sem pacote partilhado nem build.
  * Ao mudar o original, copiar de novo. */
 'use strict';
 /* supa.js — cliente mínimo do Supabase (Auth + REST) sem dependências.
@@ -43,7 +43,7 @@
     }
 
     function deTokens(t) {
-      return { access_token: t.access_token, refresh_token: t.refresh_token, expires_at: agora() + (Number(t.expires_in) || 3600) * 1000, user: t.user ? { id: t.user.id, email: t.user.email } : null };
+      return { access_token: t.access_token, refresh_token: t.refresh_token || null, expires_at: agora() + (Number(t.expires_in) || 3600) * 1000, user: t.user ? { id: t.user.id, email: t.user.email } : null };
     }
 
     /* #access_token=…&refresh_token=…&expires_in=…  ou  #error=…&error_description=… */
@@ -54,8 +54,14 @@
         if (i > 0) p[decodeURIComponent(par.slice(0, i))] = decodeURIComponent(par.slice(i + 1).replace(/\+/g, ' '));
       });
       if (p.error || p.error_description) return { erro: p.error_description || p.error };
-      if (p.access_token && p.refresh_token) return { tokens: p };
+      if (p.access_token) return { tokens: p };   // o refresh_token é opcional: as apps recebem só o token de acesso
       return null;
+    }
+
+    /* tema=light|dark no #hash (ou noutra string de parâmetros); null se não houver ou for inválido */
+    function lerTema(texto) {
+      var m = String(texto || '').match(/(?:^|[#&?])tema=(light|dark)(?:&|$)/);
+      return m ? m[1] : null;
     }
 
     function entrarComHash(hash) {
@@ -77,7 +83,7 @@
 
     var refrescando = null;
     function refrescar() {
-      if (!sessao || !sessao.refresh_token) return Promise.reject(new Error('sem sessão'));
+      if (!sessao || !sessao.refresh_token) return Promise.reject(Object.assign(new Error('sem sessão'), { status: 401 }));
       if (!refrescando) {
         refrescando = pedido('POST', '/auth/v1/token?grant_type=refresh_token', { refresh_token: sessao.refresh_token })
           .then(function (t) { var s = deTokens(t); if (!s.user) s.user = sessao.user; guardar(s); return s; })
@@ -89,7 +95,9 @@
 
     function token() {
       if (!sessao) return Promise.reject(Object.assign(new Error('sem sessão'), { status: 401 }));
-      if (sessao.expires_at - agora() > 60000) return Promise.resolve(sessao.access_token);
+      // sessão só com token de acesso (apps em modo monco): usa-o até ao fim; não há renovação aqui, volta-se à Casca
+      if (sessao.expires_at - agora() > (sessao.refresh_token ? 60000 : 5000)) return Promise.resolve(sessao.access_token);
+      if (!sessao.refresh_token) return Promise.reject(Object.assign(new Error('a sessão expirou'), { status: 401 }));
       return refrescar().then(function (s) { return s.access_token; });
     }
 
@@ -118,7 +126,13 @@
 
     return {
       utilizador: function () { return sessao && sessao.user; },
-      entrarComHash: entrarComHash, enviarLink: enviarLink, sair: sair, refrescar: refrescar, lerHash: lerHash,
+      entrarComHash: entrarComHash, enviarLink: enviarLink, sair: sair, refrescar: refrescar, lerHash: lerHash, lerTema: lerTema,
+      /* o que a Casca entrega a uma app: só o token de acesso e o que lhe resta (nunca o refresh_token) */
+      acesso: function () {
+        return token().then(function (t) { return { access_token: t, expires_in: Math.max(30, Math.floor((sessao.expires_at - agora()) / 1000)) }; });
+      },
+      soAcesso: function () { return !!sessao && !sessao.refresh_token; },
+      expiraEm: function () { return sessao ? sessao.expires_at - agora() : 0; },   // ms até o token de acesso expirar
 
       listarProjectos: function () { return auth('GET', '/rest/v1/projectos?select=id,nome,criado_em,criado_por&arquivado=is.false&order=criado_em.desc'); },
       criarProjecto: function (nome) { return auth('POST', '/rest/v1/projectos?select=id,nome,criado_em,criado_por', { nome: nome }, REP).then(function (r) { return r[0]; }); },

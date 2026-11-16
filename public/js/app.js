@@ -434,7 +434,8 @@
       $('principal').hidden = false;
       $('monco-barra').hidden = false;
       $('monco-nome').textContent = info.nome;
-      $('monco-casca').href = urlCasca();
+      window.MoncoBarra.montar($('mb'), { atual: 'veredicto', cascaUrl: monco.casca, projecto: monco.id });
+      vigiarSessao();
       $('btn-importar').hidden = true;
       $('btn-export-json').textContent = 'Exportar para o Veredicto standalone (JSON)';
       $('btn-export-json').title = 'Inclui os nomes dos incrementos do projecto, para as ligações abrirem fora da monco';
@@ -443,9 +444,39 @@
       store.aoEstado(renderMonco);
       arrancar();
     }, function (e) {
-      if (e && e.status === 401) return monco.supa.sair().then(function () { portaEntrar('A sessão expirou — entra de novo.'); });
+      if (e && e.status === 401) return pedirSessao('A sessão expirou.');
       portaErro(e && e.message ? e.message : 'erro desconhecido');
     });
+  }
+
+  /* ── sessão: vem da Casca ───────────────────────────────────────────────────
+     Em modo monco a app não tem o token de renovação: a Casca entrega-lhe um token de acesso no #hash e, quando
+     ele está a acabar (ou expirou), a app volta à Casca (?ir=veredicto), que o renova e a devolve aqui.
+     A sessão fica no sessionStorage: é só deste separador e não se mistura com o uso standalone. */
+  var salvo = {};
+  function armazem() {
+    try { var s = window.sessionStorage; s.setItem('mb-teste', '1'); s.removeItem('mb-teste'); return s; }
+    catch (e) { return { getItem: function (k) { return k in salvo ? salvo[k] : null; }, setItem: function (k, v) { salvo[k] = String(v); }, removeItem: function (k) { delete salvo[k]; } }; }
+  }
+  function temaActual() { var t = document.documentElement.getAttribute('data-theme'); return t === 'light' || t === 'dark' ? t : 'dark'; }
+
+  /* Um salto à Casca por tentativa: se já saltou há menos de 15 s e voltou sem sessão, mostra a porta (não fica em ciclo). */
+  function pedirSessao(motivo) {
+    var arm = monco.armazem, agora = Date.now(), ult = Number(arm.getItem('mb-ir') || 0);
+    if (agora - ult < 15000) return portaEntrar((motivo ? motivo + ' ' : '') + 'Não foi possível obter a sessão da Casca.');
+    arm.setItem('mb-ir', String(agora));
+    location.replace(monco.casca + '/app?ir=veredicto&projecto=' + encodeURIComponent(monco.id) + '&tema=' + temaActual());
+  }
+
+  /* renovar antes de expirar, quando não há nada por gravar (nunca se perde trabalho) */
+  var vigia = null;
+  function vigiarSessao() {
+    if (vigia || !monco.supa.soAcesso()) return;
+    vigia = setInterval(function () {
+      if (monco.supa.expiraEm() > 120000) return;
+      if (store && store.porGravar && store.porGravar()) return;
+      pedirSessao('');
+    }, 15000);
   }
 
   function iniciarMonco() {
@@ -453,11 +484,15 @@
     monco = { supa: null, id: String(projectoId).toLowerCase(), casca: String(cfg.cascaUrl || 'https://nimble.monco.io').replace(/\/+$/, ''), nome: '' };
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(monco.id)) return portaErro('O endereço não traz um projecto válido.');
     if (!cfg.supabaseUrl || !window.Supa) return portaErro('Falta a configuração do Supabase.');
-    monco.supa = window.Supa.criar({ url: cfg.supabaseUrl, key: cfg.supabaseKey });
+    monco.armazem = armazem();
+    monco.supa = window.Supa.criar({ url: cfg.supabaseUrl, key: cfg.supabaseKey, storage: monco.armazem });
     function limparHash() { history.replaceState(null, '', location.pathname + location.search); }
-    var passo = monco.supa.lerHash(location.hash) ? monco.supa.entrarComHash(location.hash).then(limparHash) : Promise.resolve();
+    var tema = monco.supa.lerTema(location.hash);
+    if (tema && window.NimbleTheme) window.NimbleTheme.set(tema);   // o tema vem ligado ao da Casca
+    var temHash = !!monco.supa.lerHash(location.hash);
+    var passo = temHash ? monco.supa.entrarComHash(location.hash).then(function () { monco.armazem.removeItem('mb-ir'); limparHash(); }) : Promise.resolve();
     passo.then(function () {
-      if (!monco.supa.utilizador()) return portaEntrar();
+      if (!monco.supa.utilizador()) return pedirSessao('');
       abrirProjecto();
     }, function (e) { limparHash(); portaEntrar('O link falhou: ' + e.message); });
   }
