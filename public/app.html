@@ -6,6 +6,7 @@
   <title>Veredicto — app</title>
   <meta name="description" content="Hipóteses com métrica, sessões de teste e a decisão perseverar / ajustar / matar por incremento." />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="manifest" href="/manifest.webmanifest" />
   <meta name="nimble-theme-key" content="veredicto-theme" />
   <script src="/nimble/theme.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -28,6 +29,7 @@
         <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
         <span class="btn-label">Nova hipótese</span>
       </button>
+      <button class="btn btn--text btn--icon" type="button" id="btn-instalar" data-install aria-label="Instalar aplicação" title="Instalar aplicação" hidden></button>
       <button class="btn btn--text btn--icon help-btn" type="button" id="btn-ajuda" aria-label="Como funciona" title="Como funciona">?</button>
       <button class="btn btn--text btn--icon" type="button" data-theme-toggle data-theme-icon aria-label="Alternar tema claro / escuro" title="Tema"></button>
       <details class="menu" id="menu">
