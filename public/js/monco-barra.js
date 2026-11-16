@@ -1,7 +1,8 @@
 /* Copiado de nimble/app/js/monco-barra.js em 2026-11-16 — sem pacote partilhado nem build.
  * Ao mudar o original, copiar de novo (e o CSS). */
 'use strict';
-/* monco-barra.js — a barra de apps dos projectos integrados: [C] Casca | [D] [R] [T] [V].
+/* monco-barra.js — a barra de apps dos projectos integrados, como separadores: [Casca] | [D] [R] [T] [V].
+ * O separador da app aberta mostra o ícone e o nome; os outros só o ícone (o nome está na dica).
  *
  * Origem: nimble/app/js/monco-barra.js. Cada app tem uma cópia (sem pacote partilhado nem build):
  * ao mudar o original, copiar de novo (e o CSS, monco-barra.css).
@@ -12,13 +13,24 @@
  * Só as apps com modo monco (`monco: true`) são ligações; as outras aparecem apagadas. */
 (function (raiz) {
   var UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+  var NS = 'http://www.w3.org/2000/svg';
+
+  /* Ícones das apps (a marca de cada uma, num quadrado de 24). `modo`: 'traco' (linhas) ou 'cheio' (formas).
+     As cores vêm do CSS (acento da app e tinta por tema), nunca daqui. */
+  var ICONES = {
+    casca: { modo: 'traco', formas: [['rect', { x: 4, y: 4, width: 16, height: 16, rx: 3 }], ['path', { d: 'M4 10h16M10 10v10' }]] },
+    diagramico: { modo: 'cheio', formas: [['path', { d: 'M6 5.6h6.75l-1.875 4.5H6z M14.25 10.85l3.75 3.75-3.75 3.75-3.75-3.75z' }]] },
+    roadmaps: { modo: 'traco', formas: [['path', { d: 'M4 6h6M4 12h10M4 18h14' }], ['circle', { cx: 17, cy: 6, r: 2 }], ['circle', { cx: 19, cy: 12, r: 2 }]] },
+    taskboards: { modo: 'cheio', formas: [['rect', { x: 3.75, y: 3.75, width: 16.5, height: 3.75, rx: 1.1 }], ['rect', { x: 3.75, y: 9, width: 7.5, height: 6, rx: 1.1 }], ['rect', { x: 12.75, y: 9, width: 7.5, height: 6, rx: 1.1 }], ['rect', { x: 3.75, y: 16.5, width: 16.5, height: 3.75, rx: 1.1 }]] },
+    veredicto: { modo: 'traco', formas: [['path', { d: 'M5 12l4 4 10-10' }]] }
+  };
 
   /* a sequência do método: Idear, Priorizar, Construir, Validar. `cor` é o acento do kit nimbleUI. */
   var APPS = [
-    { id: 'diagramico', letra: 'D', nome: 'Diagramico', etapa: '1 · Idear', cor: 'indigo', monco: false },
-    { id: 'roadmaps', letra: 'R', nome: 'Roadmaps', etapa: '2 · Priorizar', cor: 'emerald', monco: false },
-    { id: 'taskboards', letra: 'T', nome: 'Taskboards', etapa: '3 · Construir', cor: 'rose', monco: false },
-    { id: 'veredicto', letra: 'V', nome: 'Veredicto', etapa: '4 · Validar', cor: 'amber', monco: true }
+    { id: 'diagramico', nome: 'Diagramico', etapa: '1 · Idear', cor: 'indigo', monco: false },
+    { id: 'roadmaps', nome: 'Roadmaps', etapa: '2 · Priorizar', cor: 'emerald', monco: false },
+    { id: 'taskboards', nome: 'Taskboards', etapa: '3 · Construir', cor: 'rose', monco: false },
+    { id: 'veredicto', nome: 'Veredicto', etapa: '4 · Validar', cor: 'amber', monco: true }
   ];
 
   function temaValido(t) { return t === 'light' || t === 'dark' ? t : null; }
@@ -55,13 +67,33 @@
     return n;
   }
 
-  /* cfg: { atual: 'casca'|id, cascaUrl, projecto, aoIr(id) opcional (a Casca trata a navegação ela própria) } */
+  function svg(id) {
+    var d = ICONES[id];
+    var s = raiz.document.createElementNS(NS, 'svg');
+    s.setAttribute('viewBox', '0 0 24 24');
+    s.setAttribute('class', 'mb__svg');
+    s.setAttribute('aria-hidden', 'true');
+    if (d.modo === 'traco') {
+      s.setAttribute('fill', 'none'); s.setAttribute('stroke', 'currentColor'); s.setAttribute('stroke-width', '2.4');
+      s.setAttribute('stroke-linecap', 'round'); s.setAttribute('stroke-linejoin', 'round');
+    } else {
+      s.setAttribute('fill', 'currentColor');
+    }
+    d.formas.forEach(function (f) {
+      var n = raiz.document.createElementNS(NS, f[0]);
+      Object.keys(f[1]).forEach(function (k) { n.setAttribute(k, f[1][k]); });
+      s.appendChild(n);
+    });
+    return s;
+  }
+
+  /* cfg: { atual: 'casca'|id, cascaUrl, projecto, semCasca, aoIr(id) opcional (a Casca trata a navegação ela própria) } */
   function montar(contentor, cfg) {
     var nav = el('nav', 'mb');
     nav.setAttribute('aria-label', 'Apps do projecto');
     var entradas = [];
 
-    function entrada(id, cor, letra, nome, dica, extra) {
+    function entrada(id, cor, nome, dica) {
       var href = ligacao(cfg, id, temaActual());
       var atual = cfg.atual === id;
       var n = href ? el('a', 'mb__item') : el('span', 'mb__item is-off');
@@ -70,8 +102,10 @@
       n.setAttribute('data-cor', cor);
       n.setAttribute('title', dica);
       n.setAttribute('aria-label', dica);
-      n.appendChild(el('span', 'mb__ico', letra));
-      if (extra) n.appendChild(el('span', 'mb__nome', extra));
+      var ico = el('span', 'mb__ico');
+      ico.appendChild(svg(id));
+      n.appendChild(ico);
+      if (atual) n.appendChild(el('span', 'mb__nome', nome));   // só o separador aberto leva o título
       if (href && typeof cfg.aoIr === 'function' && !atual) {
         n.addEventListener('click', function (ev) {
           if (ev.defaultPrevented || ev.button || ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey) return;
@@ -83,15 +117,15 @@
       nav.appendChild(n);
     }
 
-    // na própria Casca (cfg.semCasca) a marca "C Casca" já está no cabeçalho: só se mostra o separador e as apps
-    if (!cfg.semCasca) entrada('casca', 'orange', 'C', 'Casca', 'Casca — os projectos', 'Casca');
+    // na própria Casca (cfg.semCasca) a marca "Casca" já está no cabeçalho: só se mostra o separador e as apps
+    if (!cfg.semCasca) entrada('casca', 'orange', 'Casca', 'Casca — os projectos');
     var sep = el('span', 'mb__sep');
     sep.setAttribute('aria-hidden', 'true');
     nav.appendChild(sep);
     APPS.forEach(function (a) {
       var dica = a.nome + ' · ' + a.etapa;
       var temLigacao = a.monco && projectoValido(cfg.projecto);
-      entrada(a.id, a.cor, a.letra, a.nome, temLigacao || cfg.atual === a.id ? dica : dica + (a.monco ? ' — abre um projecto primeiro' : ' — modo monco em breve'));
+      entrada(a.id, a.cor, a.nome, temLigacao || cfg.atual === a.id ? dica : dica + (a.monco ? ' — abre um projecto primeiro' : ' — modo monco em breve'));
     });
 
     /* o tema muda sem recarregar a página: refrescar as ligações quando muda e antes de cada clique */
@@ -109,7 +143,7 @@
     return { nav: nav, refrescar: refrescar };
   }
 
-  var api = { APPS: APPS, ligacao: ligacao, montar: montar, temaValido: temaValido, projectoValido: projectoValido, baseValida: baseValida, appPorId: appPorId };
+  var api = { APPS: APPS, ICONES: ICONES, ligacao: ligacao, montar: montar, temaValido: temaValido, projectoValido: projectoValido, baseValida: baseValida, appPorId: appPorId };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else raiz.MoncoBarra = api;
 })(this);

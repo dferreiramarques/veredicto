@@ -157,18 +157,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* ── modo monco: barra do projecto, avisos, entrar ─────────────────────── */
 .projbar { border-top: 1px solid var(--border); }
 .projbar__in { display: flex; align-items: center; gap: 10px; min-height: 40px; min-width: 0; }
+.brand[hidden], #mb[hidden] { display: none; }
 .crumb { flex: none; color: var(--primary-fg); font-size: 13px; font-weight: 600; text-decoration: none; }
 .crumb:hover { text-decoration: underline; }
 .projbar__nome { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; font-weight: 600; }
 .state { flex: none; color: var(--subtle); font-size: 12px; white-space: nowrap; }
-/* telemóvel: a barra de apps e o "Sair" ficam na 1.ª linha; o nome do projecto e o estado de gravação na 2.ª */
-@media (max-width: 520px) {
-  .projbar__in { flex-wrap: wrap; row-gap: 0; padding-block: 4px; }
-  .projbar__in .grow { flex: 1; }
-  .projbar__nome { order: 3; flex: 1 1 55%; }
-  .projbar__in .state { order: 4; margin-left: auto; }
-  .projbar__in #btn-sair { order: 2; }
-}
 .state--warn { color: var(--warn); }
 .banner { display: grid; gap: 8px; margin-top: 16px; padding: 12px 14px; border: 1px solid var(--warn); border-radius: var(--r-md); background: var(--warn-soft); font-size: 14px; overflow-wrap: anywhere; }
 .banner__actions { display: flex; flex-wrap: wrap; gap: 6px; }

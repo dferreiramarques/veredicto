@@ -14,7 +14,7 @@ test('a barra liga sempre à Casca (com projecto e tema) e só ao Veredicto, que
   assert.equal(B.ligacao(cfg, 'casca', 'dark'), 'https://nimble.monco.io/app?projecto=' + ID + '&tema=dark');
   assert.equal(B.ligacao(cfg, 'veredicto', 'light'), 'https://nimble.monco.io/app?ir=veredicto&projecto=' + ID + '&tema=light');
   assert.equal(B.ligacao(cfg, 'roadmaps', 'dark'), null);
-  assert.deepEqual(B.APPS.map((a) => a.letra), ['D', 'R', 'T', 'V']);
+  assert.deepEqual(B.APPS.map((a) => a.id), ['diagramico', 'roadmaps', 'taskboards', 'veredicto']);
 });
 
 test('monco-barra.css: blocos [data-theme] só têm cores', () => {

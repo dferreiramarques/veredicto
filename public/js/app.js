@@ -434,7 +434,10 @@
       $('principal').hidden = false;
       $('monco-barra').hidden = false;
       $('monco-nome').textContent = info.nome;
+      // em modo monco o separador "Veredicto" da barra faz de marca: a marca do topo sai (não fica duplicada)
       window.MoncoBarra.montar($('mb'), { atual: 'veredicto', cascaUrl: monco.casca, projecto: monco.id });
+      $('mb').hidden = false;
+      document.querySelector('.brand').hidden = true;
       vigiarSessao();
       $('btn-importar').hidden = true;
       $('btn-export-json').textContent = 'Exportar para o Veredicto standalone (JSON)';

@@ -1,52 +1,59 @@
 /* Copiado de nimble/app/monco-barra.css em 2026-11-16 — sem pacote partilhado nem build.
  * Ao mudar o original, copiar de novo (e o JS). */
-/* monco-barra.css — a barra de apps [C] Casca | [D] [R] [T] [V] (ver js/monco-barra.js).
+/* monco-barra.css — a barra de apps como separadores: [Casca] | [D] [R] [T] [V] (ver js/monco-barra.js).
  * Origem: nimble/app/monco-barra.css; cada app tem uma cópia.
  * Claro/escuro só trocam cores: tudo o que não é cor está definido uma vez, fora dos blocos [data-theme]. */
 
-.mb { display: flex; align-items: center; gap: 4px; }
+.mb { display: flex; align-items: center; gap: 4px; min-width: 0; }
 .mb__item {
   display: inline-flex; align-items: center; gap: 8px;
-  min-height: 32px; padding: 2px; border-radius: 10px;
+  min-height: 34px; padding: 2px; border-radius: 10px;
   border: 1px solid transparent; text-decoration: none;
-  color: var(--mb-texto); font-weight: 600; font-size: 14px; line-height: 1;
+  color: var(--mb-texto); font-weight: 700; font-size: 15px; line-height: 1;
   transition: background-color .12s ease, border-color .12s ease, opacity .12s ease;
 }
 a.mb__item:hover { background: var(--mb-hover); }
 a.mb__item:focus-visible { outline: 2px solid var(--mb-foco); outline-offset: 2px; }
-.mb__item[aria-current="page"] { border-color: var(--mb-borda); background: var(--mb-atual); }
-.mb__item.is-off { opacity: .42; cursor: default; }
+.mb__item[aria-current="page"] { padding-right: 10px; }
+.mb__item.is-off { opacity: .4; cursor: default; }
 .mb__ico {
-  display: inline-flex; align-items: center; justify-content: center;
+  display: inline-flex; align-items: center; justify-content: center; flex: none;
   width: 28px; height: 28px; border-radius: 8px;
-  font-weight: 800; font-size: 14px; letter-spacing: 0;
-  background: var(--mb-fundo); color: var(--mb-cor);
-  border: 1px solid var(--mb-contorno);
+  background: var(--mb-cor); color: var(--mb-tinta);
 }
-.mb__nome { padding-right: 8px; }
-.mb__sep { width: 1px; height: 20px; margin: 0 6px; background: var(--mb-borda); }
+.mb__svg { width: 18px; height: 18px; }
+.mb__nome { white-space: nowrap; }
+.mb__sep { width: 1px; height: 20px; margin: 0 6px; background: var(--mb-borda); flex: none; }
 
-.mb__item[data-cor="orange"] { --mb-cor: var(--mb-laranja); --mb-fundo: var(--mb-laranja-fundo); --mb-contorno: var(--mb-laranja-contorno); }
-.mb__item[data-cor="indigo"] { --mb-cor: var(--mb-indigo); --mb-fundo: var(--mb-indigo-fundo); --mb-contorno: var(--mb-indigo-contorno); }
-.mb__item[data-cor="emerald"] { --mb-cor: var(--mb-emerald); --mb-fundo: var(--mb-emerald-fundo); --mb-contorno: var(--mb-emerald-contorno); }
-.mb__item[data-cor="rose"] { --mb-cor: var(--mb-rose); --mb-fundo: var(--mb-rose-fundo); --mb-contorno: var(--mb-rose-contorno); }
-.mb__item[data-cor="amber"] { --mb-cor: var(--mb-amber); --mb-fundo: var(--mb-amber-fundo); --mb-contorno: var(--mb-amber-contorno); }
+.mb__item[data-cor="orange"] { --mb-cor: var(--mb-laranja); --mb-tinta: var(--mb-laranja-tinta); }
+.mb__item[data-cor="indigo"] { --mb-cor: var(--mb-indigo); --mb-tinta: var(--mb-indigo-tinta); }
+.mb__item[data-cor="emerald"] { --mb-cor: var(--mb-emerald); --mb-tinta: var(--mb-emerald-tinta); }
+.mb__item[data-cor="rose"] { --mb-cor: var(--mb-rose); --mb-tinta: var(--mb-rose-tinta); }
+.mb__item[data-cor="amber"] { --mb-cor: var(--mb-amber); --mb-tinta: var(--mb-amber-tinta); }
 
-@media (max-width: 520px) { .mb__nome { display: none; } .mb__sep { margin: 0 2px; } }
+/* telemóvel: só os ícones (o nome do separador aberto sai) e tudo mais junto, para caber no cabeçalho */
+@media (max-width: 520px) {
+  .mb { gap: 2px; }
+  .mb__item { gap: 0; padding: 1px; min-height: 30px; }
+  .mb__item[aria-current="page"] { padding-right: 1px; }
+  .mb__ico { width: 26px; height: 26px; }
+  .mb__nome { display: none; }
+  .mb__sep { display: none; }
+}
 
 [data-theme="light"] {
-  --mb-texto: #18181b; --mb-hover: #f4f4f5; --mb-atual: #ffffff; --mb-borda: #d4d4d8; --mb-foco: #18181b;
-  --mb-laranja: #c2410c; --mb-laranja-fundo: rgba(234, 88, 12, .12); --mb-laranja-contorno: rgba(234, 88, 12, .35);
-  --mb-indigo: #2a3bb0; --mb-indigo-fundo: rgba(51, 71, 212, .12); --mb-indigo-contorno: rgba(51, 71, 212, .35);
-  --mb-emerald: #059669; --mb-emerald-fundo: rgba(16, 185, 129, .14); --mb-emerald-contorno: rgba(16, 185, 129, .4);
-  --mb-rose: #d1264a; --mb-rose-fundo: rgba(229, 43, 80, .12); --mb-rose-contorno: rgba(229, 43, 80, .35);
-  --mb-amber: #8a5f00; --mb-amber-fundo: rgba(217, 162, 27, .18); --mb-amber-contorno: rgba(217, 162, 27, .5);
+  --mb-texto: #18181b; --mb-hover: #f4f4f5; --mb-borda: #d4d4d8; --mb-foco: #18181b;
+  --mb-laranja: #ea580c; --mb-laranja-tinta: #ffffff;
+  --mb-indigo: #3347d4; --mb-indigo-tinta: #ffffff;
+  --mb-emerald: #10b981; --mb-emerald-tinta: #052e22;
+  --mb-rose: #e52b50; --mb-rose-tinta: #ffffff;
+  --mb-amber: #d9a21b; --mb-amber-tinta: #2a1d00;
 }
 [data-theme="dark"] {
-  --mb-texto: #fafafa; --mb-hover: #1f1f23; --mb-atual: #18181b; --mb-borda: #3f3f46; --mb-foco: #fafafa;
-  --mb-laranja: #fb923c; --mb-laranja-fundo: rgba(251, 146, 60, .16); --mb-laranja-contorno: rgba(251, 146, 60, .4);
-  --mb-indigo: #8b98ff; --mb-indigo-fundo: rgba(139, 152, 255, .16); --mb-indigo-contorno: rgba(139, 152, 255, .4);
-  --mb-emerald: #34d399; --mb-emerald-fundo: rgba(52, 211, 153, .16); --mb-emerald-contorno: rgba(52, 211, 153, .4);
-  --mb-rose: #f0506e; --mb-rose-fundo: rgba(240, 80, 110, .16); --mb-rose-contorno: rgba(240, 80, 110, .4);
-  --mb-amber: #f0bf3c; --mb-amber-fundo: rgba(240, 191, 60, .16); --mb-amber-contorno: rgba(240, 191, 60, .4);
+  --mb-texto: #fafafa; --mb-hover: #1f1f23; --mb-borda: #3f3f46; --mb-foco: #fafafa;
+  --mb-laranja: #fb923c; --mb-laranja-tinta: #2a1205;
+  --mb-indigo: #8b98ff; --mb-indigo-tinta: #11131a;
+  --mb-emerald: #34d399; --mb-emerald-tinta: #052e22;
+  --mb-rose: #f0506e; --mb-rose-tinta: #0e0e16;
+  --mb-amber: #f0bf3c; --mb-amber-tinta: #2a1d00;
 }
