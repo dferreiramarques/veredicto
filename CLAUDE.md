@@ -14,7 +14,7 @@ npm start           # http://localhost:3000
 ```
 
 ## Estrutura
-- `server.js` CSP + estáticos · `public/index.html` a app · `public/app.css` tokens + componentes · `public/js/theme.js`
+- `server.js` CSP + estáticos · `public/index.html` página de produto (`/`) · `public/app.html` a app (`/app`) · `public/app.css` tokens + componentes · `public/js/theme.js`
 - `public/js/core.js` **o modelo** (sem DOM, UMD): limpeza, estados, sessões, sugestão, decisão, importar (JSON + YAML do v0), exportar JSON/Markdown
 - `public/js/store.js` a costura de armazenamento `ler() / escrever() / aoMudar()` — hoje só `local` (localStorage)
 - `public/js/app.js` a interface · `test/` testes · `test/fixtures/validacoes-v0.yaml` ledger do v0

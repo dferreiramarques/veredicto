@@ -19,7 +19,10 @@ test('serve a app com CSP estrita e o healthz', async () => {
     const csp = r.headers.get('content-security-policy');
     assert.match(csp, /script-src 'self';/);
     assert.doesNotMatch(csp, /unsafe-inline/);
-    assert.match(await r.text(), /<title>Veredicto<\/title>/);
+    assert.match(await r.text(), /<title>Veredicto — Testa a aposta/);
+    const app = await fetch(s.url + '/app');
+    assert.equal(app.status, 200);
+    assert.match(await app.text(), /id="btn-nova"/);
     assert.deepEqual(await (await fetch(s.url + '/healthz')).json(), { ok: true });
     assert.equal((await fetch(s.url + '/js/core.js')).status, 200);
   } finally { s.fechar(); }
@@ -50,11 +53,23 @@ test('kit nimbleUI: ficheiros servidos, páginas carregam-no e o tema do kit só
   try {
     const base = s.url;
     for (const f of ['tokens.css', 'theme.js', 'behaviors.js']) assert.equal((await fetch(base + '/nimble/' + f)).status, 200, f);
-    const html = fs.readFileSync(path.join(__dirname, '..', 'public', 'index.html'), 'utf8');
+    const html = fs.readFileSync(path.join(__dirname, '..', 'public', 'app.html'), 'utf8');
     assert.ok(html.includes('/nimble/tokens.css') && html.includes('/nimble/theme.js') && html.includes('/nimble/behaviors.js'));
     const tokens = fs.readFileSync(path.join(__dirname, '..', 'public', 'nimble', 'tokens.css'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
     for (const [, body] of tokens.matchAll(/\[data-theme[^{]*\{([^}]*)\}/g)) {
       for (const d of body.split(';').map((x) => x.trim()).filter(Boolean)) assert.match(d, /^(--[a-z0-9-]+|color-scheme)\s*:/, 'não-cor num bloco de tema: ' + d);
     }
+  } finally { s.fechar(); }
+});
+
+test('a página de produto está em / e a app em /app; links antigos com ?projecto= vão para /app', async () => {
+  const s = await servir();
+  try {
+    const home = await (await fetch(s.url + '/')).text();
+    assert.match(home, /href="\/app"/);
+    assert.doesNotMatch(home, /id="btn-nova"/);
+    const r = await fetch(s.url + '/?projecto=abc-123', { redirect: 'manual' });
+    assert.equal(r.status, 302);
+    assert.equal(r.headers.get('location'), '/app?projecto=abc-123');
   } finally { s.fechar(); }
 });

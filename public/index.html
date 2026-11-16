@@ -3,16 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Veredicto</title>
-  <meta name="description" content="Hipóteses com métrica, sessões de teste e a decisão perseverar / ajustar / matar por incremento." />
+  <meta name="description" content="Hipóteses com métrica, sessões de teste e a decisão perseverar, ajustar ou matar a cada incremento. Os dados ficam no teu browser." />
+  <title>Veredicto — Testa a aposta, regista o sinal, decide</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <meta name="nimble-theme-key" content="veredicto-theme" />
   <script src="/nimble/theme.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/nimble/tokens.css" />
-  <link rel="stylesheet" href="/app.css" />
+  <link rel="stylesheet" href="/nimble/components.css" />
 </head>
 <body>
   <header class="topbar">
@@ -23,155 +23,92 @@
         </span>
         Veredicto
       </a>
+      <nav class="nav" aria-label="Secções">
+        <a href="#funciona">Como funciona</a>
+        <a href="#recursos">Recursos</a>
+        <a href="#dados">Dados</a>
+      </nav>
       <span class="grow"></span>
-      <button class="btn btn--primary" id="btn-nova" type="button">
-        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
-        <span class="btn-label">Nova hipótese</span>
-      </button>
       <button class="btn btn--text btn--icon" type="button" data-theme-toggle data-theme-icon aria-label="Alternar tema claro / escuro" title="Tema"></button>
-      <details class="menu" id="menu">
-        <summary class="btn btn--text btn--icon" aria-label="Menu" title="Menu">
-          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
-        </summary>
-        <div class="menu__list">
-          <button class="btn btn--text" type="button" id="btn-importar">Importar ficheiro…</button>
-          <button class="btn btn--text" type="button" id="btn-export-json">Exportar dados (JSON)</button>
-          <button class="btn btn--text" type="button" id="btn-export-md">Exportar relatório (Markdown)</button>
-        </div>
-      </details>
-      <input type="file" id="ficheiro" accept=".json,.yaml,.yml,application/json,text/yaml" hidden />
-    </div>
-    <div class="projbar" id="monco-barra" hidden>
-      <div class="wrap projbar__in">
-        <a class="crumb" id="monco-casca" href="https://nimble.monco.io/app">← Casca</a>
-        <span class="projbar__nome" id="monco-nome"></span>
-        <span class="grow"></span>
-        <span class="state" id="monco-estado" aria-live="polite"></span>
-        <button class="btn btn--text btn--sm" type="button" id="btn-sair">Sair</button>
-      </div>
+      <a class="btn btn--primary" href="/app">Abrir a app</a>
     </div>
   </header>
 
-  <section class="wrap porta" id="monco-porta" aria-live="polite" hidden></section>
-
-  <main class="wrap" id="principal">
-    <div class="banner" id="monco-aviso" role="alert" hidden></div>
-    <div class="tabs" role="tablist" aria-label="Vistas">
-      <button class="tab" role="tab" id="tab-hipoteses" aria-controls="v-hipoteses" aria-selected="true" type="button">Hipóteses</button>
-      <button class="tab" role="tab" id="tab-decisoes" aria-controls="v-decisoes" aria-selected="false" type="button">Decisões</button>
-    </div>
-
-    <section id="v-hipoteses" role="tabpanel" aria-labelledby="tab-hipoteses">
-      <div class="toolbar">
-        <div class="filters" role="group" aria-label="Filtrar por estado">
-          <button class="filter" type="button" data-filtro="todas" aria-pressed="true">Todas</button>
-          <button class="filter" type="button" data-filtro="por-testar" aria-pressed="false">Por testar</button>
-          <button class="filter" type="button" data-filtro="sustentada" aria-pressed="false">Sustentadas</button>
-          <button class="filter" type="button" data-filtro="refutada" aria-pressed="false">Refutadas</button>
-        </div>
-        <span class="grow"></span>
-        <label class="sr" for="filtro-incremento">Incremento</label>
-        <select class="select" id="filtro-incremento"></select>
+  <main>
+    <section class="wrap lp-hero">
+      <div class="eyebrow">Grátis · Sem conta · Etapa Validar do método monco</div>
+      <h1>Testa a aposta, regista o sinal, <em>decide</em>.</h1>
+      <p>Cada hipótese tem uma métrica. Cada sessão de teste deixa uma linha com o que foi observado. No fim do incremento, decides: perseverar, ajustar ou matar.</p>
+      <div class="lp-cta">
+        <a class="btn btn--primary btn--lg" href="/app">Abrir o Veredicto</a>
+        <a class="btn btn--outline btn--lg" href="#funciona">Ver como funciona</a>
       </div>
-      <p class="summary" id="resumo" aria-live="polite"></p>
-      <div class="list" id="lista"></div>
+      <p class="lp-note">Os dados ficam no teu browser. Exporta quando quiseres.</p>
     </section>
 
-    <section id="v-decisoes" role="tabpanel" aria-labelledby="tab-decisoes" hidden>
-      <p class="summary">No fim de cada incremento: perseverar, ajustar ou matar. A app sugere a partir das hipóteses críticas; quem decide és tu, com o porquê.</p>
-      <div class="list" id="decisoes"></div>
+    <section class="lp-sec" id="funciona">
+      <div class="wrap">
+        <div class="lp-head">
+          <div class="eyebrow">Como funciona</div>
+          <h2>Da aposta à decisão em quatro passos.</h2>
+        </div>
+        <div class="steps">
+          <article class="step"><h3>Escreve a hipótese</h3><p>«Se fizermos X, então Y», com a métrica e o alvo. Sem métrica não há hipótese.</p></article>
+          <article class="step"><h3>Junta-a a um incremento</h3><p>Marca as críticas: são as que pesam na decisão. As soltas ficam como spikes.</p></article>
+          <article class="step"><h3>Regista as sessões</h3><p>Data, sinal observado, valor medido e veredicto: sustentada, refutada ou insuficiente.</p></article>
+          <article class="step"><h3>Decide</h3><p>A app sugere a partir das hipóteses críticas. Quem decide és tu, e fica escrito porquê.</p></article>
+        </div>
+      </div>
     </section>
 
-    <p class="foot" id="foot">Os dados ficam neste browser. Exporta para guardar ou levar para outro lado. · Veredicto v1 · etapa Validar do método monco</p>
+    <section class="lp-sec" id="recursos">
+      <div class="wrap">
+        <div class="lp-head">
+          <div class="eyebrow">O que tens</div>
+          <h2>Menos opinião, mais evidência.</h2>
+          <p>Um registo curto e honesto do que foi testado e do que se concluiu.</p>
+        </div>
+        <div class="grid3">
+          <article class="fcard"><span class="fcard__ico"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5M4 19h16"/><path d="M8 15l3-4 3 2 4-6"/></svg></span><h3>Métrica obrigatória</h3><p>O que se mede, o alvo e como se mede. A aposta fica testável desde o início.</p></article>
+          <article class="fcard"><span class="fcard__ico"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14v16H5z"/><path d="M9 9h6M9 13h6M9 17h3"/></svg></span><h3>Uma sessão, uma linha</h3><p>O observado, não a interpretação. Com a acção de seguimento: ajuste, tema ou aprendizagem.</p></article>
+          <article class="fcard"><span class="fcard__ico"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l4 4 10-10"/></svg></span><h3>Perseverar, ajustar ou matar</h3><p>A decisão por incremento, sugerida pelas hipóteses críticas e assinada por ti.</p></article>
+          <article class="fcard"><span class="fcard__ico"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M6 12h12M10 18h4"/></svg></span><h3>Filtros claros</h3><p>Por testar, sustentadas ou refutadas, e por incremento. Sabes logo onde estás.</p></article>
+          <article class="fcard"><span class="fcard__ico"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg></span><h3>Exporta tudo</h3><p>JSON para guardar ou levar, relatório em Markdown para partilhar. Importas JSON ou YAML.</p></article>
+          <article class="fcard"><span class="fcard__ico"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></span><h3>Claro e escuro</h3><p>Segue o sistema até escolheres. Funciona bem no telemóvel.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="lp-sec" id="dados">
+      <div class="wrap">
+        <div class="lp-head">
+          <div class="eyebrow">Os teus dados</div>
+          <h2>Ficam contigo.</h2>
+          <p>Sem projecto, o Veredicto guarda tudo neste browser e não envia nada para lado nenhum. Dentro de um projecto monco, a app guarda a sua parte (a fatia «veredicto») com o resto da equipa.</p>
+        </div>
+        <div class="grid2">
+          <article class="fcard"><h3>Modo local</h3><p>Abres e usas. Os dados vivem no teu browser; exporta para guardar ou levar para outro lado.</p></article>
+          <article class="fcard"><h3>Modo projecto</h3><p>Entras com o link do projecto, vês o estado de gravação e os conflitos são mostrados antes de perderes trabalho.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="lp-sec">
+      <div class="wrap lp-center">
+        <div class="lp-head lp-head--center">
+          <h2>Começa pela primeira hipótese.</h2>
+          <p>Grátis, sem conta, sem instalação.</p>
+        </div>
+        <a class="btn btn--primary btn--lg" href="/app">Abrir o Veredicto</a>
+      </div>
+    </section>
   </main>
 
-  <dialog class="dialog" id="dlg-hip" aria-labelledby="dlg-hip-titulo">
-    <form class="form" id="form-hip" method="dialog" novalidate>
-      <h2 id="dlg-hip-titulo">Nova hipótese</h2>
-      <label class="field"><span>Aposta</span>
-        <textarea class="textarea" name="aposta" rows="2" maxlength="500" placeholder="Se fizermos X, então Y"></textarea>
-      </label>
-      <div class="row">
-        <label class="field"><span>Problema</span><input class="input" name="problema" maxlength="500" placeholder="o que dói, a quem" /></label>
-        <label class="field"><span>Utilizador</span><input class="input" name="utilizador" maxlength="120" placeholder="quem" /></label>
-      </div>
-      <fieldset class="group">
-        <legend>Métrica (obrigatória)</legend>
-        <div class="row">
-          <label class="field"><span>O que se mede</span><input class="input" name="indicador" maxlength="240" placeholder="tempo até ao primeiro roadmap" /></label>
-          <label class="field"><span>Alvo</span><input class="input" name="alvo" maxlength="120" placeholder="&lt; 10 min" /></label>
-        </div>
-        <label class="field"><span>Como se mede</span><input class="input" name="como" maxlength="500" placeholder="cronómetro em 3 sessões" /></label>
-      </fieldset>
-      <div class="row">
-        <label class="field"><span>Incremento</span>
-          <input class="input" name="incremento" list="lista-incrementos" maxlength="120" placeholder="vazio = hipótese solta (spike)" />
-          <small id="ajuda-incremento">Escreve um nome novo para criar o incremento.</small>
-        </label>
-        <label class="check" id="campo-desligar" hidden><input type="checkbox" name="desligar" /> <span>Desligar do incremento apagado</span></label>
-        <label class="check"><input type="checkbox" name="critica" checked /> <span>Crítica — pesa na decisão do incremento</span></label>
-      </div>
-      <datalist id="lista-incrementos"></datalist>
-      <p class="form__err" id="erro-hip" aria-live="assertive"></p>
-      <div class="form__actions">
-        <button class="btn btn--text" type="button" data-fechar>Cancelar</button>
-        <button class="btn btn--primary" type="submit">Guardar</button>
-      </div>
-    </form>
-  </dialog>
-
-  <dialog class="dialog" id="dlg-sessao" aria-labelledby="dlg-sessao-titulo">
-    <form class="form" id="form-sessao" method="dialog" novalidate>
-      <h2 id="dlg-sessao-titulo">Registar sessão</h2>
-      <p class="form__hint" id="sessao-hipotese"></p>
-      <div class="row">
-        <label class="field"><span>Data</span><input class="input" type="date" name="data" /></label>
-        <label class="field"><span>Tipo</span>
-          <select class="select" name="tipo">
-            <option value="validacao">validação</option>
-            <option value="levantamento">levantamento</option>
-          </select>
-        </label>
-      </div>
-      <label class="field"><span>Participantes</span><input class="input" name="participantes" maxlength="120" value="1 utilizador" /></label>
-      <label class="field"><span>Sinal observado</span>
-        <textarea class="textarea" name="sinal" rows="2" maxlength="500" placeholder="o que aconteceu, numa frase — o observado, não a interpretação"></textarea>
-      </label>
-      <label class="field"><span>Medido</span><input class="input" name="medido" maxlength="120" placeholder="valor face ao alvo (opcional)" /></label>
-      <div class="row">
-        <label class="field"><span>Veredicto</span>
-          <select class="select" name="veredicto">
-            <option value="">escolhe…</option>
-            <option value="sustentada">sustentada</option>
-            <option value="refutada">refutada</option>
-            <option value="insuficiente">insuficiente · re-testar</option>
-          </select>
-        </label>
-        <label class="field"><span>Acção</span>
-          <select class="select" name="accao">
-            <option value="">escolhe…</option>
-            <option value="ajuste">ajuste → tarefa</option>
-            <option value="tema">tema → roadmap</option>
-            <option value="aprender">aprender → decisões</option>
-          </select>
-        </label>
-      </div>
-      <label class="field"><span>Destino</span><input class="input" name="destino" maxlength="120" placeholder="onde fica o seguimento (opcional)" /></label>
-      <label class="check" id="linha-actualizar"><input type="checkbox" name="actualizar" checked /> <span id="texto-actualizar"></span></label>
-      <p class="form__err" id="erro-sessao" aria-live="assertive"></p>
-      <div class="form__actions">
-        <button class="btn btn--text" type="button" data-fechar>Cancelar</button>
-        <button class="btn btn--primary" type="submit">Registar</button>
-      </div>
-    </form>
-  </dialog>
-
-
-  <script src="/config.js"></script>
-  <script src="/nimble/behaviors.js"></script>
-  <script src="/js/supa.js"></script>
-  <script src="/js/core.js"></script>
-  <script src="/js/store.js"></script>
-  <script src="/js/app.js"></script>
+  <footer class="lp-foot">
+    <div class="wrap">
+      <span>© 2026 Veredicto · etapa Validar do método monco</span>
+      <span><a href="/app">Abrir a app</a></span>
+    </div>
+  </footer>
 </body>
 </html>
