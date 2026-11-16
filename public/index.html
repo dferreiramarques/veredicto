@@ -1,15 +1,17 @@
 <!DOCTYPE html>
-<html lang="pt-PT" data-theme="dark">
+<html lang="pt-PT" data-theme="dark" data-accent="amber">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Veredicto</title>
   <meta name="description" content="Hipóteses com métrica, sessões de teste e a decisão perseverar / ajustar / matar por incremento." />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-  <script src="/js/theme.js"></script>
+  <meta name="nimble-theme-key" content="veredicto-theme" />
+  <script src="/nimble/theme.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/nimble/tokens.css" />
   <link rel="stylesheet" href="/app.css" />
 </head>
 <body>
@@ -26,7 +28,7 @@
         <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
         <span class="btn-label">Nova hipótese</span>
       </button>
-      <button class="btn btn--text btn--icon" type="button" data-theme-toggle aria-label="Alternar tema claro / escuro" title="Tema"></button>
+      <button class="btn btn--text btn--icon" type="button" data-theme-toggle data-theme-icon aria-label="Alternar tema claro / escuro" title="Tema"></button>
       <details class="menu" id="menu">
         <summary class="btn btn--text btn--icon" aria-label="Menu" title="Menu">
           <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
@@ -164,9 +166,9 @@
     </form>
   </dialog>
 
-  <p class="toast" id="toast" role="status" hidden></p>
 
   <script src="/config.js"></script>
+  <script src="/nimble/behaviors.js"></script>
   <script src="/js/supa.js"></script>
   <script src="/js/core.js"></script>
   <script src="/js/store.js"></script>
