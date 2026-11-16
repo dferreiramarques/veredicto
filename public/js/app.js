@@ -310,7 +310,6 @@
 
   /* ── ligações ────────────────────────────────────────────────────────── */
 
-  function fecharMenu() { $('menu').open = false; }
 
   $('btn-nova').addEventListener('click', function () { abrirHipotese(null); });
   $('btn-ajuda').addEventListener('click', function () { $('dlg-ajuda').showModal(); });
@@ -326,11 +325,10 @@
     b.addEventListener('click', function () { ui.filtro = b.getAttribute('data-filtro'); render(); });
   });
   $('filtro-incremento').addEventListener('change', function (e) { ui.incremento = e.target.value; render(); });
-  $('btn-importar').addEventListener('click', function () { fecharMenu(); $('ficheiro').click(); });
+  $('btn-importar').addEventListener('click', function () { $('ficheiro').click(); });
   $('ficheiro').addEventListener('change', function (e) { importarFicheiro(e.target.files[0]); e.target.value = ''; });
-  $('btn-export-json').addEventListener('click', function () { fecharMenu(); descarregar('veredicto-' + V.hoje() + '.json', 'application/json', V.exportarJSON(doc)); });
-  $('btn-export-md').addEventListener('click', function () { fecharMenu(); descarregar('veredicto-' + V.hoje() + '.md', 'text/markdown', V.exportarMarkdown(doc)); });
-  document.addEventListener('click', function (e) { if (!$('menu').contains(e.target)) fecharMenu(); });
+  $('btn-export-json').addEventListener('click', function () { descarregar('veredicto-' + V.hoje() + '.json', 'application/json', V.exportarJSON(doc)); });
+  $('btn-export-md').addEventListener('click', function () { descarregar('veredicto-' + V.hoje() + '.md', 'text/markdown', V.exportarMarkdown(doc)); });
 
   /* ── modo monco ──────────────────────────────────────────────────────── */
 
